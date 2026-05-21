@@ -1,0 +1,10 @@
+node_modules
+.expo
+dist
+android
+ios
+build
+coverage
+supabase/seed/vocab.json
+supabase/seed/vocab.csv
+*.log

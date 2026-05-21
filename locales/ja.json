@@ -1,0 +1,58 @@
+{
+  "common": {
+    "appName": "ドイツ語単語学習アプリ",
+    "yes": "はい",
+    "no": "いいえ",
+    "cancel": "キャンセル",
+    "confirm": "確定",
+    "back": "戻る",
+    "next": "次へ",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集"
+  },
+  "review": {
+    "ratingYes": "完全に覚えた",
+    "ratingHalf": "意味を推論できた",
+    "ratingNo": "中途半端／知らない",
+    "todayBatch": "今日のバッチ",
+    "sessionComplete": "今日のセッション完了"
+  },
+  "triage": {
+    "title": "既知単語のトリアージ",
+    "prompt": "この単語、すでに知っていますか？",
+    "knownFully": "完全にわかる",
+    "known": "知っている",
+    "unknown": "知らない",
+    "modeBulk": "一括トリアージ",
+    "modeProgressive": "逐次トリアージ"
+  },
+  "deck": {
+    "active": "アクティブ",
+    "paused": "一時停止",
+    "completed": "完了",
+    "pending": "未開始",
+    "main": "メインデッキ",
+    "weak": "苦手デッキ",
+    "activate": "アクティブにする",
+    "pause": "一時停止",
+    "create": "デッキ作成",
+    "dayProgress": "Day {{day}} / Cycle {{cycle}} / Batch {{batch}}"
+  },
+  "dashboard": {
+    "tabToday": "今日",
+    "tabActiveProgress": "進捗",
+    "tabAllDecks": "全デッキ",
+    "tabMastered": "マスター履歴",
+    "tabByCategory": "品詞・タグ別",
+    "tabTrend": "推移",
+    "streakDays": "{{count}}日連続",
+    "totalLearned": "累計 {{count}}語"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "表示言語",
+    "weakThreshold": "苦手判定しきい値（N=NO回数）",
+    "wordCountPerWeek": "7日間の学習単語数 (W)"
+  }
+}

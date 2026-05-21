@@ -1,0 +1,58 @@
+{
+  "common": {
+    "appName": "German Vocab App",
+    "yes": "Yes",
+    "no": "No",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "review": {
+    "ratingYes": "Fully knew",
+    "ratingHalf": "Inferred meaning",
+    "ratingNo": "Did not know",
+    "todayBatch": "Today's batch",
+    "sessionComplete": "Today's session complete"
+  },
+  "triage": {
+    "title": "Known-word triage",
+    "prompt": "Do you already know this word?",
+    "knownFully": "Fully know",
+    "known": "Know it",
+    "unknown": "Don't know",
+    "modeBulk": "Bulk triage",
+    "modeProgressive": "Progressive triage"
+  },
+  "deck": {
+    "active": "Active",
+    "paused": "Paused",
+    "completed": "Completed",
+    "pending": "Pending",
+    "main": "Main deck",
+    "weak": "Weak deck",
+    "activate": "Activate",
+    "pause": "Pause",
+    "create": "Create deck",
+    "dayProgress": "Day {{day}} / Cycle {{cycle}} / Batch {{batch}}"
+  },
+  "dashboard": {
+    "tabToday": "Today",
+    "tabActiveProgress": "Progress",
+    "tabAllDecks": "All decks",
+    "tabMastered": "Mastered",
+    "tabByCategory": "By category",
+    "tabTrend": "Trend",
+    "streakDays": "{{count}} day streak",
+    "totalLearned": "{{count}} words learned"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Display language",
+    "weakThreshold": "Weak threshold (N = NO count)",
+    "wordCountPerWeek": "Words per 7 days (W)"
+  }
+}
