@@ -1,24 +1,17 @@
 # Deploying the web build to Vercel
 
-The Expo web export is a static single-page app. `vercel.json` in this folder
-already holds the build command, output directory, and the SPA rewrite, so the
+The Expo web export is a static single-page app. `vercel.json` at the repository
+root holds the build command, output directory, and the SPA rewrite, so the
 deploy is mostly Vercel project setup.
 
 ## One-time setup
 
-1. Push the repository to GitHub (if it is not already there).
-2. At <https://vercel.com>, create a new project and import the repository.
-3. In the project settings, set **Root Directory** to:
-
-   ```
-   02_projects/portfolio/german-vocab-app
-   ```
-
-   Vercel then reads `vercel.json` from that folder. Framework preset can be
-   left as "Other"; the build command and output directory come from
-   `vercel.json`.
-
-4. Add two environment variables (Project Settings → Environment Variables),
+1. At <https://vercel.com>, sign in and create a new project, importing this
+   GitHub repository.
+2. Leave **Root Directory** as the repository root (the default). Vercel reads
+   `vercel.json` from there. Framework preset can be left as "Other"; the build
+   command and output directory come from `vercel.json`.
+3. Add two environment variables (Project Settings → Environment Variables),
    for the Production and Preview environments:
 
    | Name                            | Value                          |
@@ -29,7 +22,7 @@ deploy is mostly Vercel project setup.
    Do **not** add `SUPABASE_SERVICE_ROLE_KEY`. It is for server-side seeding
    only and must never reach the client bundle.
 
-5. Deploy. Every push to `main` then redeploys automatically.
+4. Deploy. Every push to `main` then redeploys automatically.
 
 ## Local check before deploying
 
