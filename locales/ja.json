@@ -54,5 +54,9 @@
     "language": "表示言語",
     "weakThreshold": "苦手判定しきい値（N=NO回数）",
     "wordCountPerWeek": "7日間の学習単語数 (W)"
+  },
+  "guide": {
+    "cardTitle": "使い方",
+    "cardSubtitle": "SEKI 7×7メソッドとアプリの操作方法"
   }
 }

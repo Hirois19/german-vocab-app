@@ -62,6 +62,14 @@ export default function TodayScreen() {
         <SyncStatus />
       </View>
 
+      <TouchableOpacity style={styles.guideCard} onPress={() => router.push('/how-it-works')}>
+        <View style={styles.guideText}>
+          <ThemedText type="subtitle">{t('guide.cardTitle')}</ThemedText>
+          <ThemedText style={styles.muted}>{t('guide.cardSubtitle')}</ThemedText>
+        </View>
+        <ThemedText style={styles.chevron}>›</ThemedText>
+      </TouchableOpacity>
+
       <ThemedView style={styles.card}>
         <ThemedText type="subtitle">Vocabulary in DB</ThemedText>
         <ThemedText style={styles.bigNumber}>{cardCount ?? '—'}</ThemedText>
@@ -114,6 +122,17 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  guideCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#0a7ea4',
+  },
+  guideText: { flex: 1, gap: 2 },
+  chevron: { fontSize: 24, opacity: 0.5 },
   card: {
     padding: 16,
     borderRadius: 12,

@@ -54,5 +54,9 @@
     "language": "Display language",
     "weakThreshold": "Weak threshold (N = NO count)",
     "wordCountPerWeek": "Words per 7 days (W)"
+  },
+  "guide": {
+    "cardTitle": "How it works",
+    "cardSubtitle": "The SEKI 7×7 method and how to use the app"
   }
 }
