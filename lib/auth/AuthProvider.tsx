@@ -1,5 +1,6 @@
 import type { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { Platform } from 'react-native';
 
 import { prefetchCards } from '@/lib/cache/cardsCache';
 import { supabase } from '@/lib/db/supabase';
@@ -11,6 +12,10 @@ interface AuthContextValue {
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  /** Send a password-reset email with a link back to the in-app reset page. */
+  resetPasswordForEmail: (email: string) => Promise<{ error: Error | null }>;
+  /** Set a new password for the currently authenticated user (post-reset). */
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -61,6 +66,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       signOut: async () => {
         await supabase.auth.signOut();
+      },
+      resetPasswordForEmail: async (email) => {
+        // On web the reset email links the user back to this same origin's
+        // /reset-password page. On native the user opens the in-app deep link
+        // (configured separately via Linking; for the MVP we fall back to web).
+        const redirectTo =
+          Platform.OS === 'web' && typeof window !== 'undefined'
+            ? `${window.location.origin}/reset-password`
+            : undefined;
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+        return { error };
+      },
+      updatePassword: async (newPassword) => {
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        return { error };
       },
     }),
     [session, loading],

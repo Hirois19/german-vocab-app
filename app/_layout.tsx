@@ -34,6 +34,7 @@ export default function RootLayout() {
           <Stack>
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+            <Stack.Screen name="reset-password" options={{ headerShown: false }} />
             <Stack.Screen name="decks/new" options={{ title: 'New deck', presentation: 'modal' }} />
             <Stack.Screen name="decks/[id]/triage" options={{ title: 'Triage' }} />
             <Stack.Screen name="decks/[id]/session" options={{ title: 'Session' }} />
