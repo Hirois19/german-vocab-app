@@ -28,8 +28,8 @@ const TRIAGE_OPTIONS: { value: TriageMode; label: string; hint: string }[] = [
 
 export default function NewDeckScreen() {
   const { user } = useAuth();
-  const [selectedLevel, setSelectedLevel] = useState<CefrLevel>('B1');
-  const [name, setName] = useState(`${selectedLevel} #1`);
+  const [selectedLevels, setSelectedLevels] = useState<CefrLevel[]>(['B1']);
+  const [name, setName] = useState('B1 #1');
   // Track whether the user has typed a custom name. Once they have, the level
   // chooser stops overwriting the field; otherwise picking A2 / B1 etc. swaps
   // the placeholder to match.
@@ -41,11 +41,19 @@ export default function NewDeckScreen() {
 
   useEffect(() => {
     if (!nameEditedByUser) {
-      setName(`${selectedLevel} #1`);
+      const ordered = LEVEL_OPTIONS.filter((lv) => selectedLevels.includes(lv));
+      setName(ordered.length === 0 ? '' : `${ordered.join('+')} #1`);
     }
-  }, [selectedLevel, nameEditedByUser]);
+  }, [selectedLevels, nameEditedByUser]);
 
-  const valid = useMemo(() => name.trim().length > 0, [name]);
+  const toggleLevel = (lv: CefrLevel) => {
+    setSelectedLevels((prev) => (prev.includes(lv) ? prev.filter((x) => x !== lv) : [...prev, lv]));
+  };
+
+  const valid = useMemo(
+    () => name.trim().length > 0 && selectedLevels.length > 0,
+    [name, selectedLevels],
+  );
 
   const handleCreate = async () => {
     if (!user || !valid) return;
@@ -55,7 +63,9 @@ export default function NewDeckScreen() {
       await createMainDeck({
         userId: user.id,
         name: name.trim(),
-        levels: [selectedLevel],
+        // Pass levels in pedagogical order so the auto-expansion logic and
+        // the position-based scheduler walk easier → harder.
+        levels: LEVEL_OPTIONS.filter((lv) => selectedLevels.includes(lv)),
         wordCountPerWeek: w,
         triageMode,
       });
@@ -88,16 +98,19 @@ export default function NewDeckScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText type="subtitle">Level</ThemedText>
-        <ThemedText style={styles.hint}>Pick one CEFR level to draw from.</ThemedText>
+        <ThemedText type="subtitle">Levels</ThemedText>
+        <ThemedText style={styles.hint}>
+          Pick one or more CEFR levels. If a single level doesn&apos;t hold enough unknown words
+          during triage, the next level is added automatically.
+        </ThemedText>
         <View style={styles.chipRow}>
           {LEVEL_OPTIONS.map((lv) => {
-            const selected = selectedLevel === lv;
+            const selected = selectedLevels.includes(lv);
             return (
               <TouchableOpacity
                 key={lv}
                 style={[styles.chip, selected && styles.chipSelected]}
-                onPress={() => setSelectedLevel(lv)}
+                onPress={() => toggleLevel(lv)}
                 disabled={busy}
               >
                 <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>

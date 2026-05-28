@@ -127,6 +127,58 @@ export async function listAvailableWeakCardIds(userId: string): Promise<string[]
   return distinct.filter((id) => !taken.has(id));
 }
 
+/** CEFR levels in pedagogical order — used by the auto-expansion in bulk triage. */
+const LEVEL_ORDER: readonly CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+
+export interface ExpandDeckResult {
+  /** The level that was appended, or null if nothing left to expand into. */
+  addedLevel: CefrLevel | null;
+  addedCount: number;
+}
+
+/**
+ * Add the next un-used CEFR level's cards to a deck as new `pending` user_cards.
+ *
+ * Used by the bulk-triage screen when the user did not find enough "unknown"
+ * words within the levels currently in the deck. Cards already in the deck
+ * (by `card_id`) are skipped, so this is safe to call repeatedly. New rows
+ * are positioned after the deck's current maximum position so the SEKI
+ * scheduler picks them up in order.
+ */
+export async function expandDeckToNextLevel(
+  deckId: string,
+  userId: string,
+): Promise<ExpandDeckResult> {
+  const existing = await listByDeck(deckId);
+  if (existing.length === 0) return { addedLevel: null, addedCount: 0 };
+
+  const existingCardIds = new Set(existing.map((uc) => uc.card_id));
+  const existingCards = await listCardsByIds(Array.from(existingCardIds));
+  const covered = new Set<string>();
+  for (const c of existingCards) for (const lv of c.levels) covered.add(lv);
+
+  const nextLevel = LEVEL_ORDER.find((lv) => !covered.has(lv));
+  if (!nextLevel) return { addedLevel: null, addedCount: 0 };
+
+  // Pull the entire next-level pool so the user is guaranteed a chance to
+  // discover enough unknowns. Filter out any cards the deck already holds.
+  const pool = await listCardsByLevel([nextLevel], 5000);
+  const newCards = pool.filter((c) => !existingCardIds.has(c.id));
+  if (newCards.length === 0) return { addedLevel: nextLevel, addedCount: 0 };
+
+  const maxPosition = existing.reduce((m, uc) => (uc.position > m ? uc.position : m), 0);
+  await createMany(
+    newCards.map((card, idx) => ({
+      userId,
+      deckId,
+      cardId: card.id,
+      position: maxPosition + idx + 1,
+      tags: card.categories ?? [],
+    })),
+  );
+  return { addedLevel: nextLevel, addedCount: newCards.length };
+}
+
 export interface CreateWeakDeckResult {
   deck: DeckRow;
   populated: number;
