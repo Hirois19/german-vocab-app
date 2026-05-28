@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -28,12 +28,22 @@ const TRIAGE_OPTIONS: { value: TriageMode; label: string; hint: string }[] = [
 
 export default function NewDeckScreen() {
   const { user } = useAuth();
-  const [name, setName] = useState('Main 1');
   const [selectedLevel, setSelectedLevel] = useState<CefrLevel>('B1');
+  const [name, setName] = useState(`${selectedLevel} #1`);
+  // Track whether the user has typed a custom name. Once they have, the level
+  // chooser stops overwriting the field; otherwise picking A2 / B1 etc. swaps
+  // the placeholder to match.
+  const [nameEditedByUser, setNameEditedByUser] = useState(false);
   const [w, setW] = useState<number>(700);
   const [triageMode, setTriageMode] = useState<TriageMode>('bulk');
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!nameEditedByUser) {
+      setName(`${selectedLevel} #1`);
+    }
+  }, [selectedLevel, nameEditedByUser]);
 
   const valid = useMemo(() => name.trim().length > 0, [name]);
 
@@ -66,10 +76,13 @@ export default function NewDeckScreen() {
         <ThemedText type="subtitle">Name</ThemedText>
         <TextInput
           style={styles.input}
-          placeholder="e.g. Main 1, B1 core"
+          placeholder="e.g. B1 #1, A1 core"
           placeholderTextColor="#888"
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            setNameEditedByUser(true);
+          }}
           editable={!busy}
         />
       </View>

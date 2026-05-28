@@ -2,7 +2,14 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { TagPicker } from '@/components/tag-picker';
 import { SyncStatus } from '@/components/sync-status';
@@ -224,58 +231,66 @@ export default function SessionScreen() {
         <SyncStatus />
       </View>
 
-      <ThemedView style={styles.card}>
-        <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
-        <ThemedText style={styles.term}>{card.term_de}</ThemedText>
-        {(() => {
-          // Prefer the per-user editable tag set; fall back to the shared
-          // source-data categories until the user_cards.tags migration has run.
-          const displayTags =
-            current.userCard.tags && current.userCard.tags.length > 0
-              ? current.userCard.tags
-              : (card.categories ?? []);
-          return displayTags.length > 0 ? (
-            <View style={styles.categoriesRow}>
-              {displayTags.map((cat) => (
-                <View key={cat} style={styles.categoryChip}>
-                  <ThemedText style={styles.categoryChipText}>{cat}</ThemedText>
-                </View>
-              ))}
-            </View>
-          ) : null;
-        })()}
-        <View style={styles.cardActions}>
-          <TouchableOpacity onPress={speak} style={styles.ttsButton}>
-            <ThemedText style={styles.ttsButtonText}>🔊 Speak</ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setTagPickerOpen(true)} style={styles.ttsButton}>
-            <ThemedText style={styles.ttsButtonText}>🏷 Tag</ThemedText>
-          </TouchableOpacity>
-        </View>
-
-        {revealed && (
-          <View style={styles.backFace}>
-            {card.translations_ja.length > 0 && (
-              <ThemedText style={styles.translation}>{card.translations_ja.join(' / ')}</ThemedText>
-            )}
-            {card.translations_en.length > 0 && (
-              <ThemedText style={styles.translationEn}>
-                {card.translations_en.join(' / ')}
-              </ThemedText>
-            )}
-            {card.prateritum && (
-              <ThemedText style={styles.muted}>Prät: {card.prateritum}</ThemedText>
-            )}
-            {card.partizip_ii && (
-              <ThemedText style={styles.muted}>PII: {card.partizip_ii}</ThemedText>
-            )}
-            {card.plural && <ThemedText style={styles.muted}>Pl: {card.plural}</ThemedText>}
-            {card.examples.length > 0 && (
-              <ThemedText style={styles.example}>{card.examples[0]}</ThemedText>
-            )}
+      <ScrollView
+        style={styles.cardScroll}
+        contentContainerStyle={styles.cardScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <ThemedView style={styles.card}>
+          <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
+          <ThemedText style={styles.term}>{card.term_de}</ThemedText>
+          {(() => {
+            // Prefer the per-user editable tag set; fall back to the shared
+            // source-data categories until the user_cards.tags migration has run.
+            const displayTags =
+              current.userCard.tags && current.userCard.tags.length > 0
+                ? current.userCard.tags
+                : (card.categories ?? []);
+            return displayTags.length > 0 ? (
+              <View style={styles.categoriesRow}>
+                {displayTags.map((cat) => (
+                  <View key={cat} style={styles.categoryChip}>
+                    <ThemedText style={styles.categoryChipText}>{cat}</ThemedText>
+                  </View>
+                ))}
+              </View>
+            ) : null;
+          })()}
+          <View style={styles.cardActions}>
+            <TouchableOpacity onPress={speak} style={styles.ttsButton}>
+              <ThemedText style={styles.ttsButtonText}>🔊 Speak</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setTagPickerOpen(true)} style={styles.ttsButton}>
+              <ThemedText style={styles.ttsButtonText}>🏷 Tag</ThemedText>
+            </TouchableOpacity>
           </View>
-        )}
-      </ThemedView>
+
+          {revealed && (
+            <View style={styles.backFace}>
+              {card.translations_ja.length > 0 && (
+                <ThemedText style={styles.translation}>
+                  {card.translations_ja.join(' / ')}
+                </ThemedText>
+              )}
+              {card.translations_en.length > 0 && (
+                <ThemedText style={styles.translationEn}>
+                  {card.translations_en.join(' / ')}
+                </ThemedText>
+              )}
+              {card.prateritum && (
+                <ThemedText style={styles.muted}>Prät: {card.prateritum}</ThemedText>
+              )}
+              {card.partizip_ii && (
+                <ThemedText style={styles.muted}>PII: {card.partizip_ii}</ThemedText>
+              )}
+              {card.plural && <ThemedText style={styles.muted}>Pl: {card.plural}</ThemedText>}
+              {card.examples.length > 0 && (
+                <ThemedText style={styles.example}>{card.examples[0]}</ThemedText>
+              )}
+            </View>
+          )}
+        </ThemedView>
+      </ScrollView>
 
       {current.userCard.triage_status === 'pending' ? (
         <View style={styles.triageColumn}>
@@ -356,6 +371,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   progress: { textAlign: 'center', fontSize: 16, fontWeight: '600' },
   statusRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
+  cardScroll: { flex: 1 },
+  cardScrollContent: { flexGrow: 1, justifyContent: 'center' },
   muted: { opacity: 0.6, textAlign: 'center' },
   card: {
     padding: 24,
@@ -365,11 +382,23 @@ const styles = StyleSheet.create({
     gap: 8,
     minHeight: 280,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'stretch',
   },
-  article: { fontSize: 18, opacity: 0.6, fontStyle: 'italic' },
-  term: { fontSize: 36, fontWeight: '700', marginVertical: 4, textAlign: 'center' },
-  cardActions: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  article: { fontSize: 18, opacity: 0.6, fontStyle: 'italic', textAlign: 'center' },
+  term: {
+    fontSize: 32,
+    fontWeight: '700',
+    marginVertical: 4,
+    textAlign: 'center',
+    lineHeight: 40,
+  },
+  cardActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
   categoriesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -392,7 +421,7 @@ const styles = StyleSheet.create({
     borderColor: '#888',
   },
   ttsButtonText: { fontWeight: '600' },
-  backFace: { gap: 4, marginTop: 16, alignItems: 'center' },
+  backFace: { gap: 4, marginTop: 16, alignItems: 'stretch' },
   translation: { fontSize: 18, textAlign: 'center' },
   translationEn: { fontSize: 14, opacity: 0.7, textAlign: 'center' },
   example: { fontSize: 14, fontStyle: 'italic', marginTop: 4, textAlign: 'center' },
