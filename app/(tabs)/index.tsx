@@ -1,7 +1,14 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { SyncStatus } from '@/components/sync-status';
 import { ThemedText } from '@/components/themed-text';
@@ -56,7 +63,7 @@ export default function TodayScreen() {
     : null;
 
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
         <ThemedText type="title">{t('dashboard.tabToday')}</ThemedText>
         <SyncStatus />
@@ -115,12 +122,12 @@ export default function TodayScreen() {
           <ThemedText style={styles.signOutText}>Sign out</ThemedText>
         </TouchableOpacity>
       </ThemedView>
-    </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
+  container: { padding: 16, gap: 16, paddingBottom: 32 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   guideCard: {
     flexDirection: 'row',

@@ -1,6 +1,13 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, View, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { LineChart } from '@/components/charts/line-chart';
 import { ThemedText } from '@/components/themed-text';
@@ -55,7 +62,7 @@ export default function MasteredScreen() {
   const chartWidth = Math.min(width - 64, 360);
 
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <ThemedText type="title">Mastered</ThemedText>
 
       <View style={styles.statsRow}>
@@ -77,7 +84,7 @@ export default function MasteredScreen() {
           />
         </View>
       </ThemedView>
-    </ThemedView>
+    </ScrollView>
   );
 }
 
@@ -91,7 +98,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
+  container: { padding: 16, gap: 16, paddingBottom: 32 },
   statsRow: { flexDirection: 'row', gap: 12 },
   statCard: {
     flex: 1,

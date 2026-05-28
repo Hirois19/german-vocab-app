@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -120,7 +121,7 @@ export default function TrendScreen() {
   const totalReviews = reviews.length;
 
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <ThemedText type="title">Trend</ThemedText>
       </View>
@@ -157,7 +158,7 @@ export default function TrendScreen() {
           />
         </View>
       </ThemedView>
-    </ThemedView>
+    </ScrollView>
   );
 }
 
@@ -183,7 +184,7 @@ function ToggleButton({
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 12 },
+  container: { padding: 16, gap: 12, paddingBottom: 32 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   toggleRow: { flexDirection: 'row', gap: 0 },
   toggleButton: {

@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native';
 
 import { HorizontalBarChart } from '@/components/charts/horizontal-bar-chart';
 import { ThemedText } from '@/components/themed-text';
@@ -77,7 +77,7 @@ export default function CategoryScreen() {
   }));
 
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <ThemedText type="title">By category</ThemedText>
 
       <ThemedView style={styles.card}>
@@ -92,12 +92,12 @@ export default function CategoryScreen() {
         </ThemedText>
         <HorizontalBarChart data={articleAgg} barColor="#a67d2a" />
       </ThemedView>
-    </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
+  container: { padding: 16, gap: 16, paddingBottom: 32 },
   muted: { opacity: 0.6 },
   hint: { fontSize: 12, opacity: 0.6 },
   card: {

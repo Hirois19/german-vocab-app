@@ -155,7 +155,7 @@ function Legend({ color, label }: { color: string; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 16, gap: 16 },
+  container: { padding: 16, gap: 16, paddingBottom: 32 },
   muted: { opacity: 0.6 },
   card: {
     padding: 16,
