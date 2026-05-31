@@ -42,7 +42,7 @@ interface SessionCard {
 export default function SessionScreen() {
   const { id: deckId } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [deck, setDeck] = useState<DeckRow | null>(null);
@@ -163,6 +163,10 @@ export default function SessionScreen() {
     }
   };
 
+  // Track which cards have already had their no_count incremented this session
+  // so that going back and re-rating the same card NO does not inflate the count.
+  const [noIncremented, setNoIncremented] = useState<Set<string>>(new Set());
+
   const rate = async (rating: Rating) => {
     if (!current || !deck || !user || busy) return;
     setBusy(true);
@@ -177,8 +181,9 @@ export default function SessionScreen() {
         day: deck.current_day,
         rating,
       });
-      if (rating === 'NO') {
+      if (rating === 'NO' && !noIncremented.has(current.userCard.id)) {
         await queuedIncrementNoCount(current.userCard.id);
+        setNoIncremented((prev) => new Set(prev).add(current.userCard.id));
       }
       await advanceOrFinish();
     } catch (err) {
@@ -187,6 +192,28 @@ export default function SessionScreen() {
       setBusy(false);
     }
   };
+
+  // Step back to the most recent previously-revealed card. Cards triaged as
+  // 'known' / 'known_fully' were never actually flipped, so they are skipped.
+  const goBack = () => {
+    if (busy) return;
+    for (let i = index - 1; i >= 0; i -= 1) {
+      const c = cards[i];
+      if (c && c.userCard.triage_status === 'unknown') {
+        setIndex(i);
+        setRevealed(true);
+        return;
+      }
+    }
+  };
+
+  const hasPrevious = (() => {
+    for (let i = index - 1; i >= 0; i -= 1) {
+      const c = cards[i];
+      if (c && c.userCard.triage_status === 'unknown') return true;
+    }
+    return false;
+  })();
 
   if (loading) {
     return (
@@ -231,6 +258,17 @@ export default function SessionScreen() {
         Day {deck.current_day}/49 · Cycle {cycle} · Batch {batch}
       </ThemedText>
       <View style={styles.statusRow}>
+        {hasPrevious ? (
+          <TouchableOpacity
+            onPress={goBack}
+            disabled={busy}
+            style={[styles.backChip, busy && styles.backChipDisabled]}
+          >
+            <ThemedText style={styles.backChipText}>
+              ‹ {i18n.language === 'ja' ? '戻る' : 'Back'}
+            </ThemedText>
+          </TouchableOpacity>
+        ) : null}
         <ThemedText style={styles.muted}>
           {index + 1} / {cards.length}
         </ThemedText>
@@ -377,6 +415,15 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   progress: { textAlign: 'center', fontSize: 16, fontWeight: '600' },
   statusRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
+  backChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+  },
+  backChipDisabled: { opacity: 0.4 },
+  backChipText: { color: '#0a7ea4', fontWeight: '700', fontSize: 13 },
   cardScroll: { flex: 1 },
   cardScrollContent: { flexGrow: 1, justifyContent: 'center' },
   muted: { opacity: 0.6, textAlign: 'center' },
