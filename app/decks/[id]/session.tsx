@@ -33,6 +33,7 @@ import {
   queuedUpdateTriage,
   queuedUpsertReview,
 } from '@/lib/sync/queuedWrites';
+import { loadDayProgress, recordRated, recordTriage } from '@/lib/sync/dayProgress';
 import { loadSessionSnapshot, saveSessionSnapshot } from '@/lib/sync/sessionSnapshot';
 
 interface SessionCard {
@@ -102,14 +103,34 @@ export default function SessionScreen() {
       // interrupted by an app switch / browser tab kill continues where they
       // left off instead of resetting to position 1. Cards already rated this
       // day, and cards triaged as known earlier today, are skipped.
-      let ratedThisDay = new Set<string>();
+      const ratedThisDay = new Set<string>();
+      // Local first: this works fully offline and reflects writes still sitting
+      // in the outbox. When we fell back to the offline snapshot above, the
+      // cards' triage_status is stale (pre-today); overlay the day's recorded
+      // triage decisions so already-known cards are correctly skipped on resume.
+      try {
+        const progress = await loadDayProgress(deckId, d.current_day);
+        progress.rated.forEach((id) => ratedThisDay.add(id));
+        if (Object.keys(progress.triaged).length > 0) {
+          for (let i = 0; i < enriched.length; i += 1) {
+            const sc = enriched[i];
+            const localStatus = sc && progress.triaged[sc.userCard.id];
+            if (sc && localStatus) {
+              enriched[i] = { ...sc, userCard: { ...sc.userCard, triage_status: localStatus } };
+            }
+          }
+        }
+      } catch {
+        // Resume is a UX nicety: a cache read failure must never crash the load.
+      }
+      // Enrich with the server's record when reachable. This covers a fresh
+      // install or a second device whose local cache is empty. Offline this
+      // throws and we keep just the local set, which is enough to resume this
+      // device's own in-progress day.
       try {
         const reviews = await listReviewsForDay(deckId, user.id, d.current_day);
-        ratedThisDay = new Set(reviews.map((r) => r.user_card_id));
+        reviews.forEach((r) => ratedThisDay.add(r.user_card_id));
       } catch (queryErr) {
-        // Resume is a UX nicety: never let it crash the session load. When the
-        // user is offline the rated set just stays empty and the session
-        // starts from card 1, matching the pre-resume behavior.
         if (!isOfflineError(queryErr)) {
           console.warn('Failed to load reviews for day resume', queryErr);
         }
@@ -186,6 +207,10 @@ export default function SessionScreen() {
       // Reflect the new triage state in our local copy so we can pivot to
       // the reveal/rate UI immediately for 'unknown'.
       setCards((prev) => prev.map((c, i) => (i === index ? { ...c, userCard: updated } : c)));
+      // Persist the decision for offline resume: after a reload from the
+      // offline snapshot the card's triage_status is stale, so without this a
+      // known card would reappear as pending and resume would land on it.
+      if (deck) await recordTriage(deck.id, deck.current_day, current.userCard.id, status);
       if (status !== 'unknown') {
         // Pre-known: skip review, move on.
         await advanceOrFinish();
@@ -216,6 +241,9 @@ export default function SessionScreen() {
         day: deck.current_day,
         rating,
       });
+      // Record locally so an interrupted session resumes past this card even
+      // when fully offline (the server query in load() is unreachable then).
+      await recordRated(deck.id, deck.current_day, current.userCard.id);
       if (rating === 'NO' && !noIncremented.has(current.userCard.id)) {
         await queuedIncrementNoCount(current.userCard.id);
         setNoIncremented((prev) => new Set(prev).add(current.userCard.id));
