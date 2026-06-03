@@ -19,6 +19,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { listCardsByIdsCached } from '@/lib/cache/cardsCache';
 import { evaluateWeakOnCompletion } from '@/lib/db/deckBuilder';
 import { getDeck } from '@/lib/db/decks';
+import { listReviewsForDay } from '@/lib/db/reviews';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { listActiveByDeck } from '@/lib/db/userCards';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
@@ -96,8 +97,42 @@ export default function SessionScreen() {
         const c = cardsById.get(uc.card_id);
         if (c) enriched.push({ userCard: uc, card: c });
       }
+
+      // Resume to the first card the user still needs to act on, so a session
+      // interrupted by an app switch / browser tab kill continues where they
+      // left off instead of resetting to position 1. Cards already rated this
+      // day, and cards triaged as known earlier today, are skipped.
+      let ratedThisDay = new Set<string>();
+      try {
+        const reviews = await listReviewsForDay(deckId, user.id, d.current_day);
+        ratedThisDay = new Set(reviews.map((r) => r.user_card_id));
+      } catch (queryErr) {
+        // Resume is a UX nicety: never let it crash the session load. When the
+        // user is offline the rated set just stays empty and the session
+        // starts from card 1, matching the pre-resume behavior.
+        if (!isOfflineError(queryErr)) {
+          console.warn('Failed to load reviews for day resume', queryErr);
+        }
+      }
+      let resumeIndex = -1;
+      for (let i = 0; i < enriched.length; i += 1) {
+        const sc = enriched[i];
+        if (!sc) continue;
+        const uc = sc.userCard;
+        const needsTriage = uc.triage_status === 'pending';
+        const needsRating = uc.triage_status === 'unknown' && !ratedThisDay.has(uc.id);
+        if (needsTriage || needsRating) {
+          resumeIndex = i;
+          break;
+        }
+      }
+      // If every card already has an action recorded but the day did not
+      // advance (rare race), drop the user on the first card; they can rate
+      // it again to trigger `advanceOrFinish`.
+      if (resumeIndex === -1) resumeIndex = 0;
+
       setCards(enriched);
-      setIndex(0);
+      setIndex(resumeIndex);
       setRevealed(false);
     } catch (err) {
       Alert.alert('Load failed', (err as Error).message);

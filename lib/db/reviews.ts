@@ -73,3 +73,24 @@ export async function listReviewsForDeck(deckId: string, userId: string): Promis
   if (error) throw error;
   return (data ?? []) as ReviewRow[];
 }
+
+/**
+ * Return the reviews recorded for a specific day of a deck. The session
+ * screen calls this so a partially finished day can resume at the next
+ * un-rated card after the page reloads — e.g. after the user switches to
+ * another app and the mobile browser kills the tab.
+ */
+export async function listReviewsForDay(
+  deckId: string,
+  userId: string,
+  day: number,
+): Promise<ReviewRow[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*, user_cards!inner(deck_id)')
+    .eq('user_id', userId)
+    .eq('user_cards.deck_id', deckId)
+    .eq('day', day);
+  if (error) throw error;
+  return (data ?? []) as ReviewRow[];
+}
