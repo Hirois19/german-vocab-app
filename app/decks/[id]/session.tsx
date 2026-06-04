@@ -193,20 +193,19 @@ export default function SessionScreen() {
     Speech.speak(current.card.term_de, { language: 'de-DE' });
   };
 
-  // Auto-speak when a card transitions from unrevealed → revealed (the user
-  // tapped Reveal, or back-navigated to a previously-flipped card). Manual
-  // taps on the speaker button still trigger `speak()` directly.
+  // Auto-speak as soon as a new card appears, so the user hears the German
+  // term before they decide whether to reveal the translation. Re-firing on
+  // card change (id) only, so changing the repeat-count setting mid-card or
+  // tapping Reveal does not replay the audio.
   useEffect(() => {
-    if (!revealed || !current) return;
+    if (!current) return;
     Speech.stop();
     Speech.speak(current.card.term_de, { language: 'de-DE' });
     if (audioRepeatCount === 2) {
       Speech.speak(current.card.term_de, { language: 'de-DE' });
     }
-    // We deliberately key on the card id (not the whole object) so re-renders
-    // of the same card don't replay the audio.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [revealed, current?.userCard.id, audioRepeatCount]);
+  }, [current?.userCard.id]);
 
   const advanceOrFinish = async () => {
     if (!deck || !user) return;
