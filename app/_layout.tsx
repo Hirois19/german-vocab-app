@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
+import { BugReportButton } from '@/components/bug-report-button';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '@/lib/auth/AuthProvider';
 import { registerServiceWorker } from '@/lib/pwa/registerServiceWorker';
@@ -43,7 +44,10 @@ export default function RootLayout() {
               name="how-it-works"
               options={{ title: 'How it works', presentation: 'modal' }}
             />
+            <Stack.Screen name="settings" options={{ title: 'Settings', presentation: 'modal' }} />
+            <Stack.Screen name="bugs" options={{ title: 'Bug reports', presentation: 'modal' }} />
           </Stack>
+          <BugReportButton />
           <StatusBar style="auto" />
         </ThemeProvider>
       </SyncProvider>

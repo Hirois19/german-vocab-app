@@ -85,5 +85,16 @@ export interface UserSettingsRow {
   weak_threshold_n: number;
   default_word_count_per_week: number;
   ui_language: 'ja' | 'en';
+  audio_repeat_count: 1 | 2;
   updated_at: string;
+}
+
+export interface BugReportRow {
+  id: string;
+  user_id: string;
+  created_at: string;
+  description: string;
+  context: Record<string, unknown> | null;
+  status: 'open' | 'reviewing' | 'fixing' | 'fixed' | 'wontfix' | 'duplicate';
+  resolution_note: string | null;
 }

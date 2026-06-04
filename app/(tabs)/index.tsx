@@ -21,7 +21,7 @@ import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
 
 export default function TodayScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [cardCount, setCardCount] = useState<number | null>(null);
@@ -73,6 +73,20 @@ export default function TodayScreen() {
         <View style={styles.guideText}>
           <ThemedText type="subtitle">{t('guide.cardTitle')}</ThemedText>
           <ThemedText style={styles.muted}>{t('guide.cardSubtitle')}</ThemedText>
+        </View>
+        <ThemedText style={styles.chevron}>›</ThemedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.guideCard} onPress={() => router.push('/settings')}>
+        <View style={styles.guideText}>
+          <ThemedText type="subtitle">
+            {i18n.language === 'ja' ? '設定' : 'Settings'}
+          </ThemedText>
+          <ThemedText style={styles.muted}>
+            {i18n.language === 'ja'
+              ? '読み上げ回数・バグ報告履歴など'
+              : 'Audio repeat, bug report history, and more'}
+          </ThemedText>
         </View>
         <ThemedText style={styles.chevron}>›</ThemedText>
       </TouchableOpacity>

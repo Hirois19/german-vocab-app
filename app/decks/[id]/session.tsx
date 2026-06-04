@@ -22,6 +22,7 @@ import { getDeck } from '@/lib/db/decks';
 import { listReviewsForDay } from '@/lib/db/reviews';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { listActiveByDeck } from '@/lib/db/userCards';
+import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
 import type { Rating } from '@/lib/seki/types';
 import { dailyShuffleSeed, seededShuffle } from '@/lib/seki/shuffle';
@@ -52,6 +53,22 @@ export default function SessionScreen() {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [tagPickerOpen, setTagPickerOpen] = useState(false);
+  // User-tunable: speak the term once or twice when the card is revealed.
+  // Default to 1 until settings are loaded; the manual TTS button is unaffected.
+  const [audioRepeatCount, setAudioRepeatCount] = useState<1 | 2>(1);
+
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      try {
+        const s = await getOrCreateUserSettings(user.id);
+        setAudioRepeatCount(s.audio_repeat_count ?? 1);
+      } catch {
+        // Defaulting to once is fine if the row can't be fetched (offline,
+        // first ever load before migration applied, etc.).
+      }
+    })();
+  }, [user]);
 
   const load = useCallback(async () => {
     if (!deckId || !user) return;
@@ -168,11 +185,28 @@ export default function SessionScreen() {
 
   const current = cards[index];
 
+  // Manual TTS button: always one playback regardless of the auto-repeat
+  // setting, since the user is explicitly asking for another listen.
   const speak = () => {
     if (!current) return;
     Speech.stop();
     Speech.speak(current.card.term_de, { language: 'de-DE' });
   };
+
+  // Auto-speak when a card transitions from unrevealed → revealed (the user
+  // tapped Reveal, or back-navigated to a previously-flipped card). Manual
+  // taps on the speaker button still trigger `speak()` directly.
+  useEffect(() => {
+    if (!revealed || !current) return;
+    Speech.stop();
+    Speech.speak(current.card.term_de, { language: 'de-DE' });
+    if (audioRepeatCount === 2) {
+      Speech.speak(current.card.term_de, { language: 'de-DE' });
+    }
+    // We deliberately key on the card id (not the whole object) so re-renders
+    // of the same card don't replay the audio.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealed, current?.userCard.id, audioRepeatCount]);
 
   const advanceOrFinish = async () => {
     if (!deck || !user) return;

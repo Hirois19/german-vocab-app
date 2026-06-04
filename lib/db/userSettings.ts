@@ -27,6 +27,7 @@ export async function getOrCreate(userId: string): Promise<UserSettingsRow> {
     weak_threshold_n: DEFAULT_WEAK_THRESHOLD_N,
     default_word_count_per_week: DEFAULT_WORD_COUNT_PER_WEEK,
     ui_language: 'ja' as const,
+    audio_repeat_count: 1 as const,
     updated_at: new Date().toISOString(),
   };
   const { data, error } = await supabase.from(TABLE).insert(defaults).select('*').single();
@@ -38,6 +39,7 @@ export interface UpdateUserSettingsInput {
   weakThresholdN?: number;
   defaultWordCountPerWeek?: number;
   uiLanguage?: 'ja' | 'en';
+  audioRepeatCount?: 1 | 2;
 }
 
 export async function update(
@@ -49,6 +51,7 @@ export async function update(
   if (input.defaultWordCountPerWeek !== undefined)
     patch.default_word_count_per_week = input.defaultWordCountPerWeek;
   if (input.uiLanguage !== undefined) patch.ui_language = input.uiLanguage;
+  if (input.audioRepeatCount !== undefined) patch.audio_repeat_count = input.audioRepeatCount;
   const { data, error } = await supabase
     .from(TABLE)
     .update(patch)
