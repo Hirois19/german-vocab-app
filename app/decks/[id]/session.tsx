@@ -455,7 +455,15 @@ export default function SessionScreen() {
           />
         </View>
       ) : !revealed ? (
-        <TouchableOpacity style={styles.revealButton} onPress={() => setRevealed(true)}>
+        <TouchableOpacity
+          style={styles.revealButton}
+          onPress={() => {
+            // Flip the card AND replay the German term — easier than reaching
+            // for the manual speaker mid-flip.
+            setRevealed(true);
+            speak();
+          }}
+        >
           <ThemedText style={styles.revealButtonText}>Reveal</ThemedText>
         </TouchableOpacity>
       ) : (

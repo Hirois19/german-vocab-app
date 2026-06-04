@@ -1,4 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -11,6 +12,7 @@ import { expandDeckToNextLevel } from '@/lib/db/deckBuilder';
 import { getDeck } from '@/lib/db/decks';
 import { listByDeck, updateTriage } from '@/lib/db/userCards';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
+import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import type { TriageStatus } from '@/lib/seki/types';
 
 interface PendingItem {
@@ -37,6 +39,22 @@ export default function TriageScreen() {
   // Cumulative across all triage passes for this deck, including reloads
   // after an automatic level expansion.
   const [stats, setStats] = useState<Stats>({ knownFully: 0, known: 0, unknown: 0 });
+  // Mirrors the session screen: read the user's audio-repeat setting once
+  // on mount and replay the German term that many times when each new
+  // triage card mounts.
+  const [audioRepeatCount, setAudioRepeatCount] = useState<1 | 2>(1);
+
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      try {
+        const s = await getOrCreateUserSettings(user.id);
+        setAudioRepeatCount(s.audio_repeat_count ?? 1);
+      } catch {
+        // Defaulting to once is fine if the row can't be fetched.
+      }
+    })();
+  }, [user]);
 
   const loadPending = useCallback(async () => {
     if (!deckId) return;
@@ -71,6 +89,19 @@ export default function TriageScreen() {
   }, []);
 
   const current = pending[index];
+
+  // Auto-speak when each triage card appears, same behavior as the session
+  // screen. Re-fires only on user_card.id change, so changing the repeat
+  // setting mid-card or other re-renders do not replay the audio.
+  useEffect(() => {
+    if (!current) return;
+    Speech.stop();
+    Speech.speak(current.card.term_de, { language: 'de-DE' });
+    if (audioRepeatCount === 2) {
+      Speech.speak(current.card.term_de, { language: 'de-DE' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current?.userCard.id]);
 
   // Reach for the next CEFR level when the user has triaged everything in
   // the current batch but still has fewer "unknown" words than the deck's
