@@ -176,24 +176,27 @@ export function BugReportButton() {
 }
 
 const styles = StyleSheet.create({
+  // Positioned top-right so it stays out of the way of the in-card thumb
+  // zone (rate buttons, back button at top-left, tab bar at the bottom).
+  // The top inset accounts for the system status bar / notch on iOS.
   fab: {
     position: 'absolute',
-    right: 16,
-    bottom: 24,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(10,126,164,0.92)',
+    right: 12,
+    top: Platform.OS === 'ios' ? 56 : 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(10,126,164,0.85)',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 6,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 4,
+    elevation: 4,
     zIndex: 100,
   },
-  fabIcon: { fontSize: 22 },
+  fabIcon: { fontSize: 16 },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
