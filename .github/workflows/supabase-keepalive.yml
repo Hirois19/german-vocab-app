@@ -1,0 +1,46 @@
+name: Supabase keep-alive
+
+# Supabase free-tier projects are paused automatically after 7 days without
+# activity, which takes the app down until the project is restored by hand.
+# This job runs a trivial read every 3 days so the project stays awake.
+#
+# Note: GitHub disables scheduled workflows after 60 days of repository
+# inactivity and emails a warning first. If that happens, re-enable the
+# workflow from the Actions tab.
+
+on:
+  schedule:
+    - cron: '0 6 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Read one row from Supabase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the cards table
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL}" ] || [ -z "${SUPABASE_ANON_KEY}" ]; then
+            echo "Missing SUPABASE_URL or SUPABASE_ANON_KEY repository secret."
+            exit 1
+          fi
+
+          code=$(curl -sS --max-time 60 -o /tmp/keepalive.json -w '%{http_code}' \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/cards?select=id&limit=1")
+
+          echo "REST /cards returned HTTP ${code}"
+
+          if [ "${code}" != "200" ]; then
+            echo "Keep-alive query failed. Response body:"
+            cat /tmp/keepalive.json
+            exit 1
+          fi
+
+          echo "Project is awake."
