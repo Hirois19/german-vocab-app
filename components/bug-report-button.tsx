@@ -129,9 +129,7 @@ export function BugReportButton() {
       <Modal visible={open} animationType="fade" transparent onRequestClose={close}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
-            <ThemedText type="subtitle">
-              {isJa ? 'バグを報告' : 'Report a bug'}
-            </ThemedText>
+            <ThemedText type="subtitle">{isJa ? 'バグを報告' : 'Report a bug'}</ThemedText>
             <ThemedText style={styles.hint}>
               {isJa
                 ? '気づいた問題を書いてください。何をしていてどう動いたか、画面名なども役立ちます。'

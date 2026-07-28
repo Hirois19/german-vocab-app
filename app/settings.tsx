@@ -8,7 +8,14 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -99,9 +106,7 @@ export default function SettingsScreen() {
         </View>
 
         <TouchableOpacity style={styles.linkRow} onPress={() => router.push('/bugs')}>
-          <ThemedText type="subtitle">
-            {isJa ? 'バグ報告の履歴' : 'My bug reports'}
-          </ThemedText>
+          <ThemedText type="subtitle">{isJa ? 'バグ報告の履歴' : 'My bug reports'}</ThemedText>
           <ThemedText style={styles.linkArrow}>›</ThemedText>
         </TouchableOpacity>
       </ScrollView>

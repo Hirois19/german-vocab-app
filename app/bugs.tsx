@@ -35,7 +35,14 @@ function statusLabel(s: BugReportRow['status'], isJa: boolean): string {
       duplicate: '重複',
     }[s];
   }
-  return { open: 'Open', reviewing: 'Reviewing', fixing: 'Fixing', fixed: 'Fixed', wontfix: "Won't fix", duplicate: 'Duplicate' }[s];
+  return {
+    open: 'Open',
+    reviewing: 'Reviewing',
+    fixing: 'Fixing',
+    fixed: 'Fixed',
+    wontfix: "Won't fix",
+    duplicate: 'Duplicate',
+  }[s];
 }
 
 export default function BugsScreen() {

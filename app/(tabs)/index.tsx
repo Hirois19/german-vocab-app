@@ -79,9 +79,7 @@ export default function TodayScreen() {
 
       <TouchableOpacity style={styles.guideCard} onPress={() => router.push('/settings')}>
         <View style={styles.guideText}>
-          <ThemedText type="subtitle">
-            {i18n.language === 'ja' ? '設定' : 'Settings'}
-          </ThemedText>
+          <ThemedText type="subtitle">{i18n.language === 'ja' ? '設定' : 'Settings'}</ThemedText>
           <ThemedText style={styles.muted}>
             {i18n.language === 'ja'
               ? '読み上げ回数・バグ報告履歴など'
