@@ -2,7 +2,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -30,6 +38,7 @@ export default function TriageScreen() {
   const { id: deckId } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const isJa = i18n.language === 'ja';
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -199,7 +208,7 @@ export default function TriageScreen() {
   const card = current.card;
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingBottom: 16 + insets.bottom }]}>
       <ThemedText style={styles.progress}>
         {index + 1} / {pending.length}
       </ThemedText>
@@ -208,13 +217,21 @@ export default function TriageScreen() {
         {deck ? ` / ${deck.word_count_per_week}` : ''}
       </ThemedText>
 
-      <ThemedView style={styles.card}>
-        <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
-        <ThemedText style={styles.term}>{card.term_de}</ThemedText>
-        {card.levels.length > 0 && (
-          <ThemedText style={styles.muted}>level: {card.levels.join(', ')}</ThemedText>
-        )}
-      </ThemedView>
+      {/* The card scrolls on its own so a long term never pushes the three
+          decision buttons off the bottom of the screen. */}
+      <ScrollView
+        style={styles.cardScroll}
+        contentContainerStyle={styles.cardScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <ThemedView style={styles.card}>
+          <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
+          <ThemedText style={styles.term}>{card.term_de}</ThemedText>
+          {card.levels.length > 0 && (
+            <ThemedText style={styles.muted}>level: {card.levels.join(', ')}</ThemedText>
+          )}
+        </ThemedView>
+      </ScrollView>
 
       <View style={styles.buttonsColumn}>
         <TriageButton
@@ -266,6 +283,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   progress: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
   muted: { opacity: 0.6, textAlign: 'center' },
+  cardScroll: { flex: 1 },
+  cardScrollContent: { flexGrow: 1, justifyContent: 'center' },
   card: {
     padding: 24,
     borderRadius: 12,

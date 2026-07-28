@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TagPicker } from '@/components/tag-picker';
 import { SyncStatus } from '@/components/sync-status';
@@ -46,6 +47,7 @@ export default function SessionScreen() {
   const { id: deckId } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [deck, setDeck] = useState<DeckRow | null>(null);
@@ -349,7 +351,9 @@ export default function SessionScreen() {
   const batch = ((deck.current_day - 1) % 7) + 1;
 
   return (
-    <ThemedView style={styles.container}>
+    // The rating row sits at the bottom edge, so it needs the safe-area inset
+    // to clear the home indicator and the mobile browser toolbar.
+    <ThemedView style={[styles.container, { paddingBottom: 16 + insets.bottom }]}>
       <ThemedText style={styles.progress}>
         Day {deck.current_day}/49 · Cycle {cycle} · Batch {batch}
       </ThemedText>

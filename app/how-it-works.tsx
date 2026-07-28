@@ -7,6 +7,7 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,6 +16,7 @@ import { setLanguage } from '@/lib/i18n';
 
 export default function HowItWorksScreen() {
   const { i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const guide = getGuideContent(i18n.language);
   const isJa = i18n.language === 'ja';
 
@@ -35,7 +37,9 @@ export default function HowItWorksScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 40 + insets.bottom }]}
+      >
         <ThemedText style={styles.intro}>{guide.intro}</ThemedText>
 
         {guide.sections.map((section) => (

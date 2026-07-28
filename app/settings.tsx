@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -25,6 +26,7 @@ import { getOrCreate, update } from '@/lib/db/userSettings';
 export default function SettingsScreen() {
   const { user } = useAuth();
   const { i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const isJa = i18n.language === 'ja';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -76,7 +78,7 @@ export default function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: 32 + insets.bottom }]}>
         <View style={styles.row}>
           <ThemedText type="subtitle">
             {isJa ? 'カードめくり時の自動読み上げ回数' : 'Auto-speak on reveal'}

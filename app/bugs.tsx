@@ -8,6 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -48,6 +49,7 @@ function statusLabel(s: BugReportRow['status'], isJa: boolean): string {
 export default function BugsScreen() {
   const { user } = useAuth();
   const { i18n } = useTranslation();
+  const insets = useSafeAreaInsets();
   const isJa = i18n.language === 'ja';
   const [items, setItems] = useState<BugReportRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ export default function BugsScreen() {
             : 'No reports yet. Use the 🐞 button at the bottom right of any screen to file one.'}
         </ThemedText>
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView contentContainerStyle={[styles.list, { paddingBottom: 32 + insets.bottom }]}>
           {items.map((r) => (
             <View key={r.id} style={styles.card}>
               <View style={styles.cardHeader}>

@@ -11,6 +11,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -30,6 +31,7 @@ const SECTION_LABEL: Record<AvailableTag['kind'], string> = {
 
 export default function TagsScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [tags, setTags] = useState<TagWithCount[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -92,7 +94,9 @@ export default function TagsScreen() {
         tag.
       </ThemedText>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 32 + insets.bottom }]}
+      >
         {sections.map((sec) => {
           if (sec.items.length === 0) return null;
           return (

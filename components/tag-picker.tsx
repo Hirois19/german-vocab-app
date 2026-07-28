@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -43,6 +44,7 @@ const SECTION_LABEL: Record<AvailableTag['kind'], string> = {
 };
 
 export function TagPicker({ visible, userCardId, currentTags, onTagsChanged, onClose }: Props) {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
   const [available, setAvailable] = useState<AvailableTag[]>([]);
   const [active, setActive] = useState<Set<string>>(new Set());
@@ -108,7 +110,8 @@ export function TagPicker({ visible, userCardId, currentTags, onTagsChanged, onC
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <ThemedView style={styles.sheet}>
+        {/* Bottom sheet: pad past the home indicator / browser toolbar. */}
+        <ThemedView style={[styles.sheet, { paddingBottom: 32 + insets.bottom }]}>
           <View style={styles.header}>
             <ThemedText type="subtitle">Tags for this card</ThemedText>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -161,7 +164,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     gap: 12,
-    paddingBottom: 32,
     maxHeight: '75%',
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

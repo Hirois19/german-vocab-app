@@ -10,7 +10,8 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,6 +20,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 export default function ResetPasswordScreen() {
   const { i18n } = useTranslation();
   const { updatePassword } = useAuth();
+  const insets = useSafeAreaInsets();
   const isJa = i18n.language === 'ja';
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -51,75 +53,89 @@ export default function ResetPasswordScreen() {
     }
   };
 
+  const contentStyle = [styles.scrollContent, { paddingBottom: 24 + insets.bottom }];
+
   if (done) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          {isJa ? 'パスワードを更新しました' : 'Password updated'}
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          {isJa
-            ? '新しいパスワードでサインインできます。'
-            : 'You can now sign in with the new password.'}
-        </ThemedText>
-        <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/sign-in')}>
-          <ThemedText style={styles.primaryButtonText}>
-            {isJa ? 'サインインへ' : 'Go to sign in'}
+        <ScrollView style={styles.scroll} contentContainerStyle={contentStyle}>
+          <ThemedText type="title" style={styles.title}>
+            {isJa ? 'パスワードを更新しました' : 'Password updated'}
           </ThemedText>
-        </TouchableOpacity>
+          <ThemedText style={styles.subtitle}>
+            {isJa
+              ? '新しいパスワードでサインインできます。'
+              : 'You can now sign in with the new password.'}
+          </ThemedText>
+          <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/sign-in')}>
+            <ThemedText style={styles.primaryButtonText}>
+              {isJa ? 'サインインへ' : 'Go to sign in'}
+            </ThemedText>
+          </TouchableOpacity>
+        </ScrollView>
       </ThemedView>
     );
   }
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        {isJa ? 'パスワードを再設定' : 'Reset your password'}
-      </ThemedText>
-      <ThemedText style={styles.subtitle}>
-        {isJa ? '新しいパスワードを入力してください。' : 'Enter a new password.'}
-      </ThemedText>
-
-      {errorMsg ? (
-        <View style={styles.errorBanner}>
-          <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
-        </View>
-      ) : null}
-
-      <TextInput
-        style={styles.input}
-        placeholder={isJa ? '新しいパスワード (8文字以上)' : 'New password (at least 8 characters)'}
-        placeholderTextColor="#888"
-        autoCapitalize="none"
-        autoCorrect={false}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        editable={!busy}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder={isJa ? '新しいパスワード（確認）' : 'Confirm new password'}
-        placeholderTextColor="#888"
-        autoCapitalize="none"
-        autoCorrect={false}
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        editable={!busy}
-      />
-
-      <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={busy}>
-        <ThemedText style={styles.primaryButtonText}>
-          {busy ? '...' : isJa ? 'パスワードを更新' : 'Update password'}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={contentStyle}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ThemedText type="title" style={styles.title}>
+          {isJa ? 'パスワードを再設定' : 'Reset your password'}
         </ThemedText>
-      </TouchableOpacity>
+        <ThemedText style={styles.subtitle}>
+          {isJa ? '新しいパスワードを入力してください。' : 'Enter a new password.'}
+        </ThemedText>
+
+        {errorMsg ? (
+          <View style={styles.errorBanner}>
+            <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+          </View>
+        ) : null}
+
+        <TextInput
+          style={styles.input}
+          placeholder={
+            isJa ? '新しいパスワード (8文字以上)' : 'New password (at least 8 characters)'
+          }
+          placeholderTextColor="#888"
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+          editable={!busy}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={isJa ? '新しいパスワード（確認）' : 'Confirm new password'}
+          placeholderTextColor="#888"
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          editable={!busy}
+        />
+
+        <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={busy}>
+          <ThemedText style={styles.primaryButtonText}>
+            {busy ? '...' : isJa ? 'パスワードを更新' : 'Update password'}
+          </ThemedText>
+        </TouchableOpacity>
+      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
+  container: { flex: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 12 },
   title: { textAlign: 'center', marginBottom: 4 },
   subtitle: { textAlign: 'center', marginBottom: 16, opacity: 0.7 },
   input: {

@@ -1,7 +1,15 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,6 +20,7 @@ type Mode = 'sign-in' | 'sign-up' | 'reset';
 export default function SignInScreen() {
   const { t, i18n } = useTranslation();
   const { user, loading, signIn, signUp, resetPasswordForEmail } = useAuth();
+  const insets = useSafeAreaInsets();
   const isJa = i18n.language === 'ja';
   const [mode, setMode] = useState<Mode>('sign-in');
   const [email, setEmail] = useState('');
@@ -82,7 +91,7 @@ export default function SignInScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={styles.container}>
+      <ThemedView style={styles.centered}>
         <ActivityIndicator />
       </ThemedView>
     );
@@ -118,77 +127,90 @@ export default function SignInScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        {title}
-      </ThemedText>
-      <ThemedText style={styles.subtitle}>{subtitle}</ThemedText>
+      {/* Scrollable so the primary button stays reachable when a long notice
+          banner is showing or the on-screen keyboard shrinks the viewport. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ThemedText type="title" style={styles.title}>
+          {title}
+        </ThemedText>
+        <ThemedText style={styles.subtitle}>{subtitle}</ThemedText>
 
-      {notice ? (
-        <View style={styles.noticeBanner}>
-          <ThemedText style={styles.noticeText}>{notice}</ThemedText>
-        </View>
-      ) : null}
-      {errorMsg ? (
-        <View style={styles.errorBanner}>
-          <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
-        </View>
-      ) : null}
+        {notice ? (
+          <View style={styles.noticeBanner}>
+            <ThemedText style={styles.noticeText}>{notice}</ThemedText>
+          </View>
+        ) : null}
+        {errorMsg ? (
+          <View style={styles.errorBanner}>
+            <ThemedText style={styles.errorText}>{errorMsg}</ThemedText>
+          </View>
+        ) : null}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#888"
-        autoCapitalize="none"
-        autoCorrect={false}
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-        editable={!busy}
-      />
-      {mode !== 'reset' ? (
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder="Email"
           placeholderTextColor="#888"
           autoCapitalize="none"
           autoCorrect={false}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
           editable={!busy}
         />
-      ) : null}
+        {mode !== 'reset' ? (
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#888"
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            editable={!busy}
+          />
+        ) : null}
 
-      <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={busy}>
-        <ThemedText style={styles.primaryButtonText}>{primaryLabel}</ThemedText>
-      </TouchableOpacity>
-
-      {mode === 'sign-in' ? (
-        <>
-          <TouchableOpacity onPress={() => switchMode('reset')} disabled={busy}>
-            <ThemedText style={styles.linkText}>
-              {isJa ? 'パスワードをお忘れですか？' : 'Forgot your password?'}
-            </ThemedText>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => switchMode('sign-up')} disabled={busy}>
-            <ThemedText style={styles.linkText}>
-              {isJa ? 'アカウントをお持ちでない方はこちら' : 'No account? Sign up'}
-            </ThemedText>
-          </TouchableOpacity>
-        </>
-      ) : (
-        <TouchableOpacity onPress={() => switchMode('sign-in')} disabled={busy}>
-          <ThemedText style={styles.linkText}>
-            {isJa ? 'サインインに戻る' : 'Back to sign in'}
-          </ThemedText>
+        <TouchableOpacity style={styles.primaryButton} onPress={submit} disabled={busy}>
+          <ThemedText style={styles.primaryButtonText}>{primaryLabel}</ThemedText>
         </TouchableOpacity>
-      )}
+
+        {mode === 'sign-in' ? (
+          <>
+            <TouchableOpacity onPress={() => switchMode('reset')} disabled={busy}>
+              <ThemedText style={styles.linkText}>
+                {isJa ? 'パスワードをお忘れですか？' : 'Forgot your password?'}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => switchMode('sign-up')} disabled={busy}>
+              <ThemedText style={styles.linkText}>
+                {isJa ? 'アカウントをお持ちでない方はこちら' : 'No account? Sign up'}
+              </ThemedText>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity onPress={() => switchMode('sign-in')} disabled={busy}>
+            <ThemedText style={styles.linkText}>
+              {isJa ? 'サインインに戻る' : 'Back to sign in'}
+            </ThemedText>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, gap: 12 },
+  container: { flex: 1 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  scroll: { flex: 1 },
+  // flexGrow keeps the form vertically centred while it fits, and lets it
+  // scroll from the top once it no longer does.
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 12 },
   title: { textAlign: 'center', marginBottom: 4 },
   subtitle: { textAlign: 'center', marginBottom: 16, opacity: 0.7 },
   input: {

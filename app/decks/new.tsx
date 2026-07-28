@@ -3,11 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -28,6 +30,7 @@ const TRIAGE_OPTIONS: { value: TriageMode; label: string; hint: string }[] = [
 
 export default function NewDeckScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [selectedLevels, setSelectedLevels] = useState<CefrLevel[]>(['B1']);
   const [name, setName] = useState('B1 #1');
   // Track whether the user has typed a custom name. Once they have, the level
@@ -80,127 +83,138 @@ export default function NewDeckScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">New deck</ThemedText>
-
-      <View style={styles.section}>
-        <ThemedText type="subtitle">Name</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. B1 #1, A1 core"
-          placeholderTextColor="#888"
-          value={name}
-          onChangeText={(text) => {
-            setName(text);
-            setNameEditedByUser(true);
-          }}
-          editable={!busy}
-        />
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="subtitle">Levels</ThemedText>
-        <ThemedText style={styles.hint}>
-          Pick one or more CEFR levels. If a single level doesn&apos;t hold enough unknown words
-          during triage, the next level is added automatically.
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {LEVEL_OPTIONS.map((lv) => {
-            const selected = selectedLevels.includes(lv);
-            return (
-              <TouchableOpacity
-                key={lv}
-                style={[styles.chip, selected && styles.chipSelected]}
-                onPress={() => toggleLevel(lv)}
-                disabled={busy}
-              >
-                <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {lv}
-                </ThemedText>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="subtitle">Triage mode</ThemedText>
-        <ThemedText style={styles.hint}>
-          How you mark already-known words: all at once before activation, or inline as each card
-          first appears.
-        </ThemedText>
-        <View style={styles.chipRow}>
-          {TRIAGE_OPTIONS.map((opt) => {
-            const selected = triageMode === opt.value;
-            return (
-              <TouchableOpacity
-                key={opt.value}
-                style={[styles.chip, selected && styles.chipSelected]}
-                onPress={() => setTriageMode(opt.value)}
-                disabled={busy}
-              >
-                <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {opt.label}
-                </ThemedText>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <ThemedText style={styles.hint}>
-          {TRIAGE_OPTIONS.find((o) => o.value === triageMode)?.hint}
-        </ThemedText>
-      </View>
-
-      <View style={styles.section}>
-        <ThemedText type="subtitle">Words per 7 days (W)</ThemedText>
-        <View style={styles.chipRow}>
-          {W_OPTIONS.map((opt) => {
-            const selected = w === opt;
-            return (
-              <TouchableOpacity
-                key={opt}
-                style={[styles.chip, selected && styles.chipSelected]}
-                onPress={() => setW(opt)}
-                disabled={busy}
-              >
-                <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
-                  {opt}
-                </ThemedText>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-        <ThemedText style={styles.hint}>
-          Batch size = ceil(W / 7) = {Math.ceil(w / 7)} words per day.
-        </ThemedText>
-      </View>
-
-      {errorMsg && (
-        <View style={styles.errorBox}>
-          <ThemedText style={styles.errorText}>Error: {errorMsg}</ThemedText>
-        </View>
-      )}
-
-      <TouchableOpacity
-        style={[styles.createButton, (!valid || busy) && styles.createButtonDisabled]}
-        onPress={handleCreate}
-        disabled={!valid || busy}
+      {/* The form is taller than a phone viewport once the hints wrap, so it
+          has to scroll. Without this the Create button sat below the fold with
+          no way to reach it. */}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 + insets.bottom }]}
+        keyboardShouldPersistTaps="handled"
       >
-        {busy ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <ThemedText style={styles.createButtonText}>Create deck</ThemedText>
-        )}
-      </TouchableOpacity>
+        <ThemedText type="title">New deck</ThemedText>
 
-      <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()} disabled={busy}>
-        <ThemedText>Cancel</ThemedText>
-      </TouchableOpacity>
+        <View style={styles.section}>
+          <ThemedText type="subtitle">Name</ThemedText>
+          <TextInput
+            style={styles.input}
+            placeholder="e.g. B1 #1, A1 core"
+            placeholderTextColor="#888"
+            value={name}
+            onChangeText={(text) => {
+              setName(text);
+              setNameEditedByUser(true);
+            }}
+            editable={!busy}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="subtitle">Levels</ThemedText>
+          <ThemedText style={styles.hint}>
+            Pick one or more CEFR levels. If a single level doesn&apos;t hold enough unknown words
+            during triage, the next level is added automatically.
+          </ThemedText>
+          <View style={styles.chipRow}>
+            {LEVEL_OPTIONS.map((lv) => {
+              const selected = selectedLevels.includes(lv);
+              return (
+                <TouchableOpacity
+                  key={lv}
+                  style={[styles.chip, selected && styles.chipSelected]}
+                  onPress={() => toggleLevel(lv)}
+                  disabled={busy}
+                >
+                  <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
+                    {lv}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="subtitle">Triage mode</ThemedText>
+          <ThemedText style={styles.hint}>
+            How you mark already-known words: all at once before activation, or inline as each card
+            first appears.
+          </ThemedText>
+          <View style={styles.chipRow}>
+            {TRIAGE_OPTIONS.map((opt) => {
+              const selected = triageMode === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[styles.chip, selected && styles.chipSelected]}
+                  onPress={() => setTriageMode(opt.value)}
+                  disabled={busy}
+                >
+                  <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
+                    {opt.label}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <ThemedText style={styles.hint}>
+            {TRIAGE_OPTIONS.find((o) => o.value === triageMode)?.hint}
+          </ThemedText>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText type="subtitle">Words per 7 days (W)</ThemedText>
+          <View style={styles.chipRow}>
+            {W_OPTIONS.map((opt) => {
+              const selected = w === opt;
+              return (
+                <TouchableOpacity
+                  key={opt}
+                  style={[styles.chip, selected && styles.chipSelected]}
+                  onPress={() => setW(opt)}
+                  disabled={busy}
+                >
+                  <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
+                    {opt}
+                  </ThemedText>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <ThemedText style={styles.hint}>
+            Batch size = ceil(W / 7) = {Math.ceil(w / 7)} words per day.
+          </ThemedText>
+        </View>
+
+        {errorMsg && (
+          <View style={styles.errorBox}>
+            <ThemedText style={styles.errorText}>Error: {errorMsg}</ThemedText>
+          </View>
+        )}
+
+        <TouchableOpacity
+          style={[styles.createButton, (!valid || busy) && styles.createButtonDisabled]}
+          onPress={handleCreate}
+          disabled={!valid || busy}
+        >
+          {busy ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <ThemedText style={styles.createButtonText}>Create deck</ThemedText>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()} disabled={busy}>
+          <ThemedText>Cancel</ThemedText>
+        </TouchableOpacity>
+      </ScrollView>
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, gap: 16 },
+  container: { flex: 1 },
+  scroll: { flex: 1 },
+  scrollContent: { padding: 16, gap: 16 },
   section: { gap: 6 },
   input: {
     borderWidth: 1,
