@@ -60,18 +60,18 @@ const ja: GuideContent = {
     },
     {
       heading: '知っている単語を仕分ける（トリアージ）',
-      body: '既に知っている単語を学習対象から外す仕組みです。3つのボタンで判定し、「知らない」と判定した単語だけがデッキに入ります。',
+      body: '既に知っている単語を学習対象から外す仕組みです。「知っている」「知らない」の2択で判定し、「知らない」と判定した単語だけがデッキに入ります。',
       bullets: [
         '一括モード: 学習開始前に候補語をまとめて仕分けます。',
         '逐次モード: 各単語が初めて出たとき、その場で仕分けます。知っている単語が抜けると、次の候補が繰り上がります。',
-        'ボタンは「完全にわかる」「知っている」「知らない」の3段階です。',
+        '迷ったら「知らない」を選んでおけば、その単語は学習対象に残ります。',
       ],
     },
     {
       heading: '毎日のセッション',
       body: '「今日」タブから今日のセッションを開始します。',
       bullets: [
-        'カードのドイツ語を見て、めくると意味・例文・活用が出ます。',
+        'カードのドイツ語を見て、カードをタップすると裏返り、意味・例文・活用が出ます。',
         '3段階で自己評価します: YES（完全に覚えた）、HALF（意味を推測できた）、NO（わからなかった）。',
         '発音ボタンで読み上げ、タグボタンでその単語のタグを編集できます。',
         '割り当てられたバッチを1周するとセッション完了です。',
@@ -140,18 +140,18 @@ const en: GuideContent = {
     },
     {
       heading: 'Triage: marking words you already know',
-      body: 'Triage removes words you already know from the schedule. You judge each word with three buttons. Only the words you mark "don\'t know" go into the deck.',
+      body: 'Triage removes words you already know from the schedule. Each word is a two-way call, "Know it" or "Don\'t know", and only the words you mark "don\'t know" go into the deck.',
       bullets: [
         'Bulk mode: triage the candidate words all at once before you start.',
         'Progressive mode: triage each word the first time it appears. When a known word drops out, the next candidate moves up to replace it.',
-        'The three buttons are "Fully know", "Know it", and "Don\'t know".',
+        'When in doubt, pick "Don\'t know" and the word stays in the deck.',
       ],
     },
     {
       heading: 'The daily session',
       body: 'Start the day\'s session from the "Today" tab.',
       bullets: [
-        'See the German word, then reveal the meaning, example, and word forms.',
+        'See the German word, then tap the card to flip it and read the meaning, example, and word forms.',
         'Rate yourself on three levels: YES (knew it fully), HALF (inferred the meaning), NO (did not know it).',
         'Use the speak button to hear the word and the tag button to edit its tags.',
         "The session is complete once you finish the day's batch.",
