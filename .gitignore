@@ -35,6 +35,10 @@ yarn-error.*
 .env
 .env.*
 
+# python bytecode from the seed / extraction scripts
+__pycache__/
+*.pyc
+
 # typescript
 *.tsbuildinfo
 

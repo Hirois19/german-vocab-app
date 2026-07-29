@@ -28,6 +28,7 @@ import { batchAssignmentForDay } from '@/lib/seki/scheduler';
 import type { Rating } from '@/lib/seki/types';
 import { dailyShuffleSeed, seededShuffle } from '@/lib/seki/shuffle';
 import { effectiveDeck, sessionBatch, type TriageButton } from '@/lib/seki/triage';
+import { spokenForm } from '@/lib/tts/spokenForm';
 import { isOfflineError } from '@/lib/sync/connectivity';
 import {
   queuedAdvanceDeckDay,
@@ -48,6 +49,7 @@ export default function SessionScreen() {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
+  const isJa = i18n.language === 'ja';
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [deck, setDeck] = useState<DeckRow | null>(null);
@@ -192,7 +194,7 @@ export default function SessionScreen() {
   const speak = () => {
     if (!current) return;
     Speech.stop();
-    Speech.speak(current.card.term_de, { language: 'de-DE' });
+    Speech.speak(spokenForm(current.card), { language: 'de-DE' });
   };
 
   // Auto-speak as soon as a new card appears, so the user hears the German
@@ -202,12 +204,24 @@ export default function SessionScreen() {
   useEffect(() => {
     if (!current) return;
     Speech.stop();
-    Speech.speak(current.card.term_de, { language: 'de-DE' });
+    const utterance = spokenForm(current.card);
+    Speech.speak(utterance, { language: 'de-DE' });
     if (audioRepeatCount === 2) {
-      Speech.speak(current.card.term_de, { language: 'de-DE' });
+      Speech.speak(utterance, { language: 'de-DE' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.userCard.id]);
+
+  // Flip the card AND replay the German term: easier than reaching for the
+  // manual speaker mid-flip. Once revealed, the next action is a rating, so a
+  // second tap does nothing rather than flipping back.
+  const canFlip = !!current && current.userCard.triage_status !== 'pending' && !revealed;
+
+  const flip = () => {
+    if (!canFlip) return;
+    setRevealed(true);
+    speak();
+  };
 
   const advanceOrFinish = async () => {
     if (!deck || !user) return;
@@ -380,74 +394,85 @@ export default function SessionScreen() {
         contentContainerStyle={styles.cardScrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <ThemedView style={styles.card}>
-          <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
-          <ThemedText style={styles.term}>{card.term_de}</ThemedText>
-          {(() => {
-            // Prefer the per-user editable tag set; fall back to the shared
-            // source-data categories until the user_cards.tags migration has run.
-            const displayTags =
-              current.userCard.tags && current.userCard.tags.length > 0
-                ? current.userCard.tags
-                : (card.categories ?? []);
-            return displayTags.length > 0 ? (
-              <View style={styles.categoriesRow}>
-                {displayTags.map((cat) => (
-                  <View key={cat} style={styles.categoryChip}>
-                    <ThemedText style={styles.categoryChipText}>{cat}</ThemedText>
-                  </View>
-                ))}
-              </View>
-            ) : null;
-          })()}
-          <View style={styles.cardActions}>
-            <TouchableOpacity onPress={speak} style={styles.ttsButton}>
-              <ThemedText style={styles.ttsButtonText}>🔊 Speak</ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setTagPickerOpen(true)} style={styles.ttsButton}>
-              <ThemedText style={styles.ttsButtonText}>🏷 Tag</ThemedText>
-            </TouchableOpacity>
-          </View>
-
-          {revealed && (
-            <View style={styles.backFace}>
-              {card.translations_ja.length > 0 && (
-                <ThemedText style={styles.translation}>
-                  {card.translations_ja.join(' / ')}
-                </ThemedText>
-              )}
-              {card.translations_en.length > 0 && (
-                <ThemedText style={styles.translationEn}>
-                  {card.translations_en.join(' / ')}
-                </ThemedText>
-              )}
-              {card.prateritum && (
-                <ThemedText style={styles.muted}>Prät: {card.prateritum}</ThemedText>
-              )}
-              {card.partizip_ii && (
-                <ThemedText style={styles.muted}>PII: {card.partizip_ii}</ThemedText>
-              )}
-              {card.plural && <ThemedText style={styles.muted}>Pl: {card.plural}</ThemedText>}
-              {card.examples.length > 0 && (
-                <ThemedText style={styles.example}>{card.examples[0]}</ThemedText>
-              )}
+        {/* Tapping the card itself flips it, the way a physical flashcard
+            works. Disabled while the card is still awaiting triage: the point
+            of that step is to answer before seeing the meaning. */}
+        <TouchableOpacity
+          activeOpacity={canFlip ? 0.85 : 1}
+          onPress={flip}
+          disabled={!canFlip}
+          accessibilityRole="button"
+          accessibilityLabel={isJa ? '意味を表示' : 'Reveal the meaning'}
+        >
+          <ThemedView style={styles.card}>
+            <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
+            <ThemedText style={styles.term}>{card.term_de}</ThemedText>
+            {(() => {
+              // Prefer the per-user editable tag set; fall back to the shared
+              // source-data categories until the user_cards.tags migration has run.
+              const displayTags =
+                current.userCard.tags && current.userCard.tags.length > 0
+                  ? current.userCard.tags
+                  : (card.categories ?? []);
+              return displayTags.length > 0 ? (
+                <View style={styles.categoriesRow}>
+                  {displayTags.map((cat) => (
+                    <View key={cat} style={styles.categoryChip}>
+                      <ThemedText style={styles.categoryChipText}>{cat}</ThemedText>
+                    </View>
+                  ))}
+                </View>
+              ) : null;
+            })()}
+            <View style={styles.cardActions}>
+              <TouchableOpacity onPress={speak} style={styles.ttsButton}>
+                <ThemedText style={styles.ttsButtonText}>🔊 Speak</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setTagPickerOpen(true)} style={styles.ttsButton}>
+                <ThemedText style={styles.ttsButtonText}>🏷 Tag</ThemedText>
+              </TouchableOpacity>
             </View>
-          )}
-        </ThemedView>
+
+            {revealed && (
+              <View style={styles.backFace}>
+                {card.translations_ja.length > 0 && (
+                  <ThemedText style={styles.translation}>
+                    {card.translations_ja.join(' / ')}
+                  </ThemedText>
+                )}
+                {card.translations_en.length > 0 && (
+                  <ThemedText style={styles.translationEn}>
+                    {card.translations_en.join(' / ')}
+                  </ThemedText>
+                )}
+                {card.prateritum && (
+                  <ThemedText style={styles.muted}>Prät: {card.prateritum}</ThemedText>
+                )}
+                {card.partizip_ii && (
+                  <ThemedText style={styles.muted}>PII: {card.partizip_ii}</ThemedText>
+                )}
+                {card.plural && <ThemedText style={styles.muted}>Pl: {card.plural}</ThemedText>}
+                {card.examples.length > 0 && (
+                  <ThemedText style={styles.example}>{card.examples[0]}</ThemedText>
+                )}
+              </View>
+            )}
+
+            {canFlip && (
+              <ThemedText style={styles.flipHint}>
+                {isJa ? 'タップして意味を表示' : 'Tap to reveal'}
+              </ThemedText>
+            )}
+          </ThemedView>
+        </TouchableOpacity>
       </ScrollView>
 
       {current.userCard.triage_status === 'pending' ? (
         <View style={styles.triageColumn}>
           <ThemedText style={styles.triagePrompt}>{t('triage.prompt')}</ThemedText>
           <RatingButton
-            label={t('triage.knownFully')}
-            color="#3a8a4f"
-            onPress={() => handleTriage('known_fully')}
-            disabled={busy}
-          />
-          <RatingButton
             label={t('triage.known')}
-            color="#a67d2a"
+            color="#3a8a4f"
             onPress={() => handleTriage('known')}
             disabled={busy}
           />
@@ -459,15 +484,7 @@ export default function SessionScreen() {
           />
         </View>
       ) : !revealed ? (
-        <TouchableOpacity
-          style={styles.revealButton}
-          onPress={() => {
-            // Flip the card AND replay the German term — easier than reaching
-            // for the manual speaker mid-flip.
-            setRevealed(true);
-            speak();
-          }}
-        >
+        <TouchableOpacity style={styles.revealButton} onPress={flip}>
           <ThemedText style={styles.revealButtonText}>Reveal</ThemedText>
         </TouchableOpacity>
       ) : (
@@ -593,6 +610,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   revealButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  flipHint: { textAlign: 'center', fontSize: 12, opacity: 0.45, marginTop: 4 },
   ratingRow: { flexDirection: 'row', gap: 8 },
   triageColumn: { gap: 8 },
   triagePrompt: { textAlign: 'center', opacity: 0.7, marginBottom: 4 },

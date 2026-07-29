@@ -21,7 +21,6 @@
   "triage": {
     "title": "Known-word triage",
     "prompt": "Do you already know this word?",
-    "knownFully": "Fully know",
     "known": "Know it",
     "unknown": "Don't know",
     "modeBulk": "Bulk triage",

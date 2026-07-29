@@ -43,10 +43,24 @@ const supabase = createClient(url, serviceRoleKey, {
   auth: { persistSession: false },
 });
 
+const LEADING_ARTICLE = /^(der|die|das)\s+/i;
+
+/**
+ * The article belongs in its own column, not inside the term. Some source
+ * spreadsheets carry it in both, which made the card render the gender twice
+ * ("die" above "die Badewanne"). Strip it only when the article column is
+ * populated, so phrases like "das heißt" and compound genders like
+ * "der/die Abgeordnete" stay intact.
+ */
+function stripDuplicateArticle(entry) {
+  if (!entry.article) return entry.term_de;
+  return entry.term_de.replace(LEADING_ARTICLE, '');
+}
+
 function toRow(entry) {
   return {
     canonical_key: entry.canonical_key,
-    term_de: entry.term_de,
+    term_de: stripDuplicateArticle(entry),
     article: entry.article ?? null,
     pos: entry.pos ?? null,
     translations_ja: entry.translations_ja ?? [],

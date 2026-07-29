@@ -31,11 +31,11 @@ describe('decideTriageStatus / isInActiveDeck / isPreKnown', () => {
     expect(isPreKnown(s)).toBe(true);
   });
 
-  it('"known_fully" is archived as pre-known, not in deck', () => {
-    const s = decideTriageStatus('known_fully');
-    expect(s).toBe('known_fully');
-    expect(isInActiveDeck(s)).toBe(false);
-    expect(isPreKnown(s)).toBe(true);
+  // The triage UI dropped the third button in 2026-07, but rows triaged before
+  // that still carry 'known_fully' and must keep behaving as pre-known.
+  it('legacy "known_fully" rows are still archived as pre-known, not in deck', () => {
+    expect(isInActiveDeck('known_fully')).toBe(false);
+    expect(isPreKnown('known_fully')).toBe(true);
   });
 
   it('a still-pending card is neither in the deck nor pre-known', () => {

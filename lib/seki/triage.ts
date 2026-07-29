@@ -2,11 +2,15 @@
  * Known-word triage logic.
  *
  * Before / during the first SEKI cycle, the user can mark each card as:
- *   - "完全にわかる" → triage_status = 'known_fully'  (excluded from deck, archived as pre-known)
- *   - "知ってる"     → triage_status = 'known'        (excluded from deck, archived as pre-known)
- *   - "知らない"     → triage_status = 'unknown'      (included in active SEKI cycle)
+ *   - "知っている" → triage_status = 'known'    (excluded from deck, archived as pre-known)
+ *   - "知らない"   → triage_status = 'unknown'  (included in active SEKI cycle)
  *
  * Cards remain 'pending' until the user triages them.
+ *
+ * The triage was a three-way choice ('known_fully' / 'known' / 'unknown') until
+ * 2026-07-29. The two "known" variants always behaved identically, so the extra
+ * button only cost a decision. 'known_fully' stays in `TriageStatus` because
+ * rows triaged before the change still carry it.
  *
  * Two triage modes (selected per deck):
  *   - 'bulk':        user triages a large candidate pool up-front, the first W
@@ -19,7 +23,8 @@
 
 import type { TriageStatus } from './types';
 
-export type TriageButton = 'known_fully' | 'known' | 'unknown';
+/** What the triage UI can produce. Narrower than `TriageStatus`. */
+export type TriageButton = 'known' | 'unknown';
 
 export type TriageMode = 'bulk' | 'progressive';
 

@@ -21,7 +21,8 @@ import { getDeck } from '@/lib/db/decks';
 import { listByDeck, updateTriage } from '@/lib/db/userCards';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
-import type { TriageStatus } from '@/lib/seki/types';
+import type { TriageButton as TriageChoice } from '@/lib/seki/triage';
+import { spokenForm } from '@/lib/tts/spokenForm';
 
 interface PendingItem {
   userCard: UserCardRow;
@@ -29,7 +30,6 @@ interface PendingItem {
 }
 
 interface Stats {
-  knownFully: number;
   known: number;
   unknown: number;
 }
@@ -47,7 +47,7 @@ export default function TriageScreen() {
   const [index, setIndex] = useState(0);
   // Cumulative across all triage passes for this deck, including reloads
   // after an automatic level expansion.
-  const [stats, setStats] = useState<Stats>({ knownFully: 0, known: 0, unknown: 0 });
+  const [stats, setStats] = useState<Stats>({ known: 0, unknown: 0 });
   // Mirrors the session screen: read the user's audio-repeat setting once
   // on mount and replay the German term that many times when each new
   // triage card mounts.
@@ -105,9 +105,10 @@ export default function TriageScreen() {
   useEffect(() => {
     if (!current) return;
     Speech.stop();
-    Speech.speak(current.card.term_de, { language: 'de-DE' });
+    const utterance = spokenForm(current.card);
+    Speech.speak(utterance, { language: 'de-DE' });
     if (audioRepeatCount === 2) {
-      Speech.speak(current.card.term_de, { language: 'de-DE' });
+      Speech.speak(utterance, { language: 'de-DE' });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.userCard.id]);
@@ -150,13 +151,12 @@ export default function TriageScreen() {
     );
   };
 
-  const handleTriage = async (status: TriageStatus) => {
+  const handleTriage = async (status: TriageChoice) => {
     if (!current || busy) return;
     setBusy(true);
     try {
       await updateTriage(current.userCard.id, status);
       const nextStats: Stats = {
-        knownFully: stats.knownFully + (status === 'known_fully' ? 1 : 0),
         known: stats.known + (status === 'known' ? 1 : 0),
         unknown: stats.unknown + (status === 'unknown' ? 1 : 0),
       };
@@ -213,7 +213,7 @@ export default function TriageScreen() {
         {index + 1} / {pending.length}
       </ThemedText>
       <ThemedText style={styles.muted}>
-        ✓{stats.knownFully + stats.known} · ?{stats.unknown}
+        ✓{stats.known} · ?{stats.unknown}
         {deck ? ` / ${deck.word_count_per_week}` : ''}
       </ThemedText>
 
@@ -235,14 +235,8 @@ export default function TriageScreen() {
 
       <View style={styles.buttonsColumn}>
         <TriageButton
-          label={t('triage.knownFully')}
-          color="#3a8a4f"
-          onPress={() => handleTriage('known_fully')}
-          disabled={busy}
-        />
-        <TriageButton
           label={t('triage.known')}
-          color="#a67d2a"
+          color="#3a8a4f"
           onPress={() => handleTriage('known')}
           disabled={busy}
         />

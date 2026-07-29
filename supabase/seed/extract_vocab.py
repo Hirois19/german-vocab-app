@@ -47,6 +47,11 @@ ARTICLE_RE = re.compile(
 )
 ARTICLE_VALUES = {"der", "die", "das"}
 
+# Only der/die/das, and only at the start. Used to keep the article out of
+# term_de when it also lives in its own column, which otherwise renders the
+# gender twice on the card ("die" above "die Badewanne").
+DEFINITE_ARTICLE_RE = re.compile(r"^(der|die|das)\s+", re.IGNORECASE)
+
 
 def normalize_key(term: str) -> str:
     if not term:
@@ -356,6 +361,12 @@ def add_entry(
 
     if article and article.lower() in ARTICLE_VALUES:
         entry["article"] = entry["article"] or article.lower()
+
+    # Several source sheets repeat the article inside the term cell. The column
+    # is the source of truth, so drop the inline copy. Entries without a known
+    # article keep their term untouched ("das heißt", "der/die Abgeordnete").
+    if entry["article"]:
+        entry["term_de"] = DEFINITE_ARTICLE_RE.sub("", entry["term_de"]).strip()
 
     if pos and not entry["pos"]:
         entry["pos"] = pos.lower()
