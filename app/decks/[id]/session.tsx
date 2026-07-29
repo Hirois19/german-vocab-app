@@ -25,7 +25,7 @@ import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { listActiveByDeck } from '@/lib/db/userCards';
 import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
-import type { Rating } from '@/lib/seki/types';
+import type { RatingButton as RatingChoice } from '@/lib/seki/types';
 import { dailyShuffleSeed, seededShuffle } from '@/lib/seki/shuffle';
 import { effectiveDeck, sessionBatch, type TriageButton } from '@/lib/seki/triage';
 import { spokenForm } from '@/lib/tts/spokenForm';
@@ -276,7 +276,7 @@ export default function SessionScreen() {
   // so that going back and re-rating the same card NO does not inflate the count.
   const [noIncremented, setNoIncremented] = useState<Set<string>>(new Set());
 
-  const rate = async (rating: Rating) => {
+  const rate = async (rating: RatingChoice) => {
     if (!current || !deck || !user || busy) return;
     setBusy(true);
     try {
@@ -490,7 +490,6 @@ export default function SessionScreen() {
       ) : (
         <View style={styles.ratingRow}>
           <RatingButton label="NO" color="#a63a3a" onPress={() => rate('NO')} disabled={busy} />
-          <RatingButton label="HALF" color="#a67d2a" onPress={() => rate('HALF')} disabled={busy} />
           <RatingButton label="YES" color="#3a8a4f" onPress={() => rate('YES')} disabled={busy} />
         </View>
       )}

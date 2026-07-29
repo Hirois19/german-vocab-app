@@ -81,6 +81,10 @@ export default function ProgressScreen() {
   const totalAll = totalYes + totalHalf + totalNo;
   const yesRate = totalAll === 0 ? 0 : Math.round((totalYes / totalAll) * 100);
   const halfRate = totalAll === 0 ? 0 : Math.round((totalHalf / totalAll) * 100);
+  // HALF was retired from the rating row (ADR 0008). Decks reviewed before that
+  // still have HALF rows, so the breakdown is shown only when there are any
+  // rather than carrying a permanent zero.
+  const hasHalf = totalHalf > 0;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -112,15 +116,16 @@ export default function ProgressScreen() {
               Day {deck.current_day}/49 · W={deck.word_count_per_week}
             </ThemedText>
             <ThemedText style={styles.hint}>
-              Green = YES (fully knew). Yellow = HALF (inferred meaning). Bars grow as the cycle
-              fills in.
+              {hasHalf
+                ? 'Green = YES (knew it). Yellow = HALF (retired rating, older cycles only). Bars grow as the cycle fills in.'
+                : 'Green = YES (knew it). Bars grow as the cycle fills in.'}
             </ThemedText>
             <View style={styles.chartContainer}>
               <StackedBarChart data={chartData} maxValue={deck.word_count_per_week} height={200} />
             </View>
             <View style={styles.legendRow}>
               <Legend color="#3a8a4f" label={`YES ${totalYes}`} />
-              <Legend color="#a67d2a" label={`HALF ${totalHalf}`} />
+              {hasHalf ? <Legend color="#a67d2a" label={`HALF ${totalHalf}`} /> : null}
               <Legend color="#666" label={`NO ${totalNo}`} />
             </View>
           </ThemedView>
@@ -130,9 +135,11 @@ export default function ProgressScreen() {
             <ThemedText>
               YES rate: <ThemedText style={styles.strong}>{yesRate}%</ThemedText>
             </ThemedText>
-            <ThemedText>
-              HALF rate: <ThemedText style={styles.strong}>{halfRate}%</ThemedText>
-            </ThemedText>
+            {hasHalf ? (
+              <ThemedText>
+                HALF rate: <ThemedText style={styles.strong}>{halfRate}%</ThemedText>
+              </ThemedText>
+            ) : null}
             <ThemedText style={styles.muted}>Total reviews: {totalAll}</ThemedText>
           </ThemedView>
         </>

@@ -10,7 +10,15 @@
  * Day counter is session-based, not calendar-based: missed days do not advance Day.
  */
 
+/**
+ * A stored review rating. 'HALF' is legacy: the session offered it until
+ * 2026-07-30 (see ADR 0008) and rows written before then still carry it, so
+ * every reader must keep handling it. New reviews are 'YES' or 'NO'.
+ */
 export type Rating = 'YES' | 'HALF' | 'NO';
+
+/** What the session's rating row can produce. Narrower than `Rating`. */
+export type RatingButton = 'YES' | 'NO';
 
 export type TriageStatus = 'pending' | 'known_fully' | 'known' | 'unknown';
 

@@ -72,7 +72,7 @@ const ja: GuideContent = {
       body: '「今日」タブから今日のセッションを開始します。',
       bullets: [
         'カードのドイツ語を見て、カードをタップすると裏返り、意味・例文・活用が出ます。',
-        '3段階で自己評価します: YES（完全に覚えた）、HALF（意味を推測できた）、NO（わからなかった）。',
+        '2択で自己評価します: YES（わかった）、NO（わからなかった）。',
         '発音ボタンで読み上げ、タグボタンでその単語のタグを編集できます。',
         '割り当てられたバッチを1周するとセッション完了です。',
       ],
@@ -152,7 +152,7 @@ const en: GuideContent = {
       body: 'Start the day\'s session from the "Today" tab.',
       bullets: [
         'See the German word, then tap the card to flip it and read the meaning, example, and word forms.',
-        'Rate yourself on three levels: YES (knew it fully), HALF (inferred the meaning), NO (did not know it).',
+        'Rate yourself either way: YES (knew it) or NO (did not know it).',
         'Use the speak button to hear the word and the tag button to edit its tags.',
         "The session is complete once you finish the day's batch.",
       ],

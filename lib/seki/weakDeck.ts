@@ -5,6 +5,11 @@
  *   (final cycle rating is NO or HALF)
  *
  * The default threshold N = 5 (i.e., struggling on 5+ of 7 reviews).
+ *
+ * The HALF arm of the second condition only fires on decks reviewed before
+ * 2026-07-30, when the session still offered a HALF button (ADR 0008). For
+ * ratings written since, the condition reduces to "final cycle was NO". The
+ * check stays because those older rows are still read.
  */
 
 import { CYCLES_PER_DECK } from './scheduler';

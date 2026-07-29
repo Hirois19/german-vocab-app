@@ -1,6 +1,7 @@
 # 0002. Weak-card detection rule and the 苦手デッキ loop
 
-- Status: Accepted
+- Status: Accepted. The rating scale below is superseded by ADR 0008, which
+  drops HALF. The weak rule itself still stands as written.
 - Date: 2026-05-21
 
 ## Context
