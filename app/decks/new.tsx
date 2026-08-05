@@ -15,18 +15,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { createMainDeck } from '@/lib/db/deckBuilder';
-import type { CefrLevel, TriageMode } from '@/lib/seki/types';
+import type { CefrLevel } from '@/lib/seki/types';
 
 const LEVEL_OPTIONS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const W_OPTIONS = [350, 700];
-const TRIAGE_OPTIONS: { value: TriageMode; label: string; hint: string }[] = [
-  { value: 'bulk', label: 'Bulk', hint: 'Triage all candidates before activation' },
-  {
-    value: 'progressive',
-    label: 'Progressive',
-    hint: 'Triage inline the first time a card appears',
-  },
-];
 
 export default function NewDeckScreen() {
   const { user } = useAuth();
@@ -38,7 +30,6 @@ export default function NewDeckScreen() {
   // the placeholder to match.
   const [nameEditedByUser, setNameEditedByUser] = useState(false);
   const [w, setW] = useState<number>(700);
-  const [triageMode, setTriageMode] = useState<TriageMode>('bulk');
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -70,7 +61,6 @@ export default function NewDeckScreen() {
         // the position-based scheduler walk easier → harder.
         levels: LEVEL_OPTIONS.filter((lv) => selectedLevels.includes(lv)),
         wordCountPerWeek: w,
-        triageMode,
       });
       router.back();
     } catch (err) {
@@ -131,34 +121,6 @@ export default function NewDeckScreen() {
               );
             })}
           </View>
-        </View>
-
-        <View style={styles.section}>
-          <ThemedText type="subtitle">Triage mode</ThemedText>
-          <ThemedText style={styles.hint}>
-            How you mark already-known words: all at once before activation, or inline as each card
-            first appears.
-          </ThemedText>
-          <View style={styles.chipRow}>
-            {TRIAGE_OPTIONS.map((opt) => {
-              const selected = triageMode === opt.value;
-              return (
-                <TouchableOpacity
-                  key={opt.value}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                  onPress={() => setTriageMode(opt.value)}
-                  disabled={busy}
-                >
-                  <ThemedText style={[styles.chipText, selected && styles.chipTextSelected]}>
-                    {opt.label}
-                  </ThemedText>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          <ThemedText style={styles.hint}>
-            {TRIAGE_OPTIONS.find((o) => o.value === triageMode)?.hint}
-          </ThemedText>
         </View>
 
         <View style={styles.section}>

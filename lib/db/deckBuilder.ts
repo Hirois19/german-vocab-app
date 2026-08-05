@@ -27,7 +27,6 @@ export interface CreateMainDeckInput {
   name: string;
   levels: CefrLevel[];
   wordCountPerWeek: number;
-  triageMode?: TriageMode;
 }
 
 export interface CreateMainDeckResult {
@@ -240,22 +239,21 @@ export async function createMainDeck(input: CreateMainDeckInput): Promise<Create
     throw new Error('wordCountPerWeek must be at least 7.');
   }
 
-  const triageMode = input.triageMode ?? 'bulk';
+  // Every new deck is bulk-triaged (ADR 0009). The mode is still written to
+  // the row because the column and its check constraint remain for decks
+  // created earlier.
+  const triageMode: TriageMode = 'bulk';
 
-  // Fetch the candidate pool. Progressive mode provisions the whole level pool
-  // so known words triaged inline can be backfilled from later candidates;
-  // bulk mode only needs a modest buffer over W.
-  const fetchLimit =
-    triageMode === 'progressive' ? MAX_DECK_PROVISION : Math.max(input.wordCountPerWeek * 2, 2000);
+  // Bulk mode needs a modest buffer over W: enough candidates that triaging
+  // away the already-known ones still leaves W unknowns.
+  const fetchLimit = Math.min(Math.max(input.wordCountPerWeek * 2, 2000), MAX_DECK_PROVISION);
   const pool = await listCardsByLevel(input.levels, fetchLimit);
   if (pool.length === 0) {
     throw new Error(`No cards found for levels: ${input.levels.join(', ')}`);
   }
 
-  // Progressive: load the entire pool as 'pending' candidates. The session's
-  // effective deck (first W non-excluded) shifts forward as cards are triaged.
-  // Bulk: provision exactly W; the user triages those W before activation.
-  const slice = triageMode === 'progressive' ? pool : pool.slice(0, input.wordCountPerWeek);
+  // Provision exactly W; the user triages those W before activation.
+  const slice = pool.slice(0, input.wordCountPerWeek);
 
   const deck = await createDeck({
     userId: input.userId,

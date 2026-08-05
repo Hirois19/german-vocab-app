@@ -12,11 +12,12 @@
  * button only cost a decision. 'known_fully' stays in `TriageStatus` because
  * rows triaged before the change still carry it.
  *
- * Two triage modes (selected per deck):
- *   - 'bulk':        user triages a large candidate pool up-front, the first W
- *                    "unknown" cards form the deck, SEKI starts after.
- *   - 'progressive': user triages each card the first time it appears in Cycle 1,
- *                    known cards are excluded and replaced from the candidate pool.
+ * Triage is done in bulk: the user triages the candidate pool up-front, the
+ * first W "unknown" cards form the deck, and SEKI starts after (ADR 0009).
+ *
+ * 'progressive' mode, where each card was triaged inline the first time it
+ * appeared in cycle 1, was removed as an option. Decks created before the
+ * change still carry the value, so the type and the backfill logic below stay.
  *
  * This file holds the pure logic that is independent of UI or persistence.
  */
@@ -26,6 +27,7 @@ import type { TriageStatus } from './types';
 /** What the triage UI can produce. Narrower than `TriageStatus`. */
 export type TriageButton = 'known' | 'unknown';
 
+/** 'progressive' is legacy: only decks created before ADR 0009 carry it. */
 export type TriageMode = 'bulk' | 'progressive';
 
 export const DEFAULT_TRIAGE_MODE: TriageMode = 'bulk';

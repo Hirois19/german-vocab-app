@@ -51,20 +51,20 @@ const ja: GuideContent = {
     },
     {
       heading: 'デッキを作る',
-      body: '「全デッキ」タブから新しいデッキを作成します。作成時に次の3つを選びます。',
+      body: '「全デッキ」タブから新しいデッキを作成します。作成時に次の2つを選びます。',
       bullets: [
-        'レベル: A1, A2, B1, B2, C1 から1つ。',
+        'レベル: A1, A2, B1, B2, C1 から1つ以上。',
         '7日間の学習語数 W。1日のバッチ数は W ÷ 7 です。',
-        'トリアージモード（下記）。',
       ],
     },
     {
       heading: '知っている単語を仕分ける（トリアージ）',
       body: '既に知っている単語を学習対象から外す仕組みです。「知っている」「知らない」の2択で判定し、「知らない」と判定した単語だけがデッキに入ります。',
       bullets: [
-        '一括モード: 学習開始前に候補語をまとめて仕分けます。',
-        '逐次モード: 各単語が初めて出たとき、その場で仕分けます。知っている単語が抜けると、次の候補が繰り上がります。',
+        '学習を始める前に、候補語をまとめて仕分けます。',
+        'カードをタップすると裏返って意味が出るので、確認してから判定できます。',
         '迷ったら「知らない」を選んでおけば、その単語は学習対象に残ります。',
+        '途中で抜けても判定は保存されます。次に開いたときは未判定の単語から続きます。',
       ],
     },
     {
@@ -131,20 +131,20 @@ const en: GuideContent = {
     },
     {
       heading: 'Create a deck',
-      body: 'Create a new deck from the "All decks" tab. You choose three things:',
+      body: 'Create a new deck from the "All decks" tab. You choose two things:',
       bullets: [
-        'Level: one of A1, A2, B1, B2, C1.',
+        'Level: one or more of A1, A2, B1, B2, C1.',
         'Words per 7 days, W. The daily batch size is W ÷ 7.',
-        'Triage mode (see below).',
       ],
     },
     {
       heading: 'Triage: marking words you already know',
       body: 'Triage removes words you already know from the schedule. Each word is a two-way call, "Know it" or "Don\'t know", and only the words you mark "don\'t know" go into the deck.',
       bullets: [
-        'Bulk mode: triage the candidate words all at once before you start.',
-        'Progressive mode: triage each word the first time it appears. When a known word drops out, the next candidate moves up to replace it.',
+        'You triage the candidate words all at once, before the deck starts.',
+        'Tap a card to flip it and check the meaning before you decide.',
         'When in doubt, pick "Don\'t know" and the word stays in the deck.',
+        'Leaving part-way is fine. Decisions are saved as you make them, and the next visit picks up at the first untriaged word.',
       ],
     },
     {

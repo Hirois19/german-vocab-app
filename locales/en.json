@@ -22,9 +22,7 @@
     "title": "Known-word triage",
     "prompt": "Do you already know this word?",
     "known": "Know it",
-    "unknown": "Don't know",
-    "modeBulk": "Bulk triage",
-    "modeProgressive": "Progressive triage"
+    "unknown": "Don't know"
   },
   "deck": {
     "active": "Active",

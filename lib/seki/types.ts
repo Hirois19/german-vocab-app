@@ -26,6 +26,7 @@ export type DeckStatus = 'pending' | 'active' | 'paused' | 'completed';
 
 export type DeckKind = 'main' | 'weak';
 
+/** 'progressive' is legacy: only decks created before ADR 0009 carry it. */
 export type TriageMode = 'bulk' | 'progressive';
 
 export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';

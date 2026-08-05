@@ -104,6 +104,37 @@ export async function listActiveByDeck(deckId: string): Promise<UserCardRow[]> {
   return (data ?? []) as UserCardRow[];
 }
 
+/**
+ * Count the deck's cards per triage status.
+ *
+ * The triage screen needs the deck's running totals, not just what the user
+ * decided in the current sitting: the "stop once W unknowns are secured" check
+ * and the auto-expansion check are both against the deck's target W, and
+ * triage is routinely spread over several sittings.
+ *
+ * Uses head-only count queries, so no rows travel over the wire.
+ */
+export async function countByTriageStatus(
+  deckId: string,
+): Promise<{ known: number; unknown: number }> {
+  const countFor = async (statuses: TriageStatus[]): Promise<number> => {
+    const { count, error } = await supabase
+      .from(TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('deck_id', deckId)
+      .in('triage_status', statuses);
+    if (error) throw error;
+    return count ?? 0;
+  };
+  const [known, unknown] = await Promise.all([
+    // 'known_fully' is the retired third triage option (ADR 0007); decks
+    // triaged before that change still hold it and it counts as known.
+    countFor(['known', 'known_fully']),
+    countFor(['unknown']),
+  ]);
+  return { known, unknown };
+}
+
 export async function updateTriage(userCardId: string, status: TriageStatus): Promise<UserCardRow> {
   const { data, error } = await supabase
     .from(TABLE)

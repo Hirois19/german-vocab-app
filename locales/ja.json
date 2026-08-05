@@ -22,9 +22,7 @@
     "title": "既知単語のトリアージ",
     "prompt": "この単語、すでに知っていますか？",
     "known": "知っている",
-    "unknown": "知らない",
-    "modeBulk": "一括トリアージ",
-    "modeProgressive": "逐次トリアージ"
+    "unknown": "知らない"
   },
   "deck": {
     "active": "アクティブ",

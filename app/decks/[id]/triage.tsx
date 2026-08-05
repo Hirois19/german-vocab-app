@@ -18,7 +18,7 @@ import { useAuth } from '@/lib/auth/AuthProvider';
 import { listCardsByIdsCached } from '@/lib/cache/cardsCache';
 import { expandDeckToNextLevel } from '@/lib/db/deckBuilder';
 import { getDeck } from '@/lib/db/decks';
-import { listByDeck, updateTriage } from '@/lib/db/userCards';
+import { countByTriageStatus, listByDeck, updateTriage } from '@/lib/db/userCards';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import type { TriageButton as TriageChoice } from '@/lib/seki/triage';
@@ -45,9 +45,11 @@ export default function TriageScreen() {
   const [deck, setDeck] = useState<DeckRow | null>(null);
   const [pending, setPending] = useState<PendingItem[]>([]);
   const [index, setIndex] = useState(0);
-  // Cumulative across all triage passes for this deck, including reloads
-  // after an automatic level expansion.
+  // Deck totals, not per-sitting: seeded from the database on load so leaving
+  // and re-entering the screen continues the count instead of restarting it.
   const [stats, setStats] = useState<Stats>({ known: 0, unknown: 0 });
+  // Flipped state of the current card. Reset whenever the card changes.
+  const [revealed, setRevealed] = useState(false);
   // Mirrors the session screen: read the user's audio-repeat setting once
   // on mount and replay the German term that many times when each new
   // triage card mounts.
@@ -80,8 +82,13 @@ export default function TriageScreen() {
         const c = cardsById.get(uc.card_id);
         return c ? [{ userCard: uc, card: c }] : [];
       });
+      // Seed the counters from what the deck already holds. Triage is normally
+      // spread over several sittings, and both the "W unknowns secured" stop
+      // and the level auto-expansion compare against the deck's target.
+      setStats(await countByTriageStatus(deckId));
       setPending(items);
       setIndex(0);
+      setRevealed(false);
     } catch (err) {
       Alert.alert('Load failed', (err as Error).message);
     } finally {
@@ -104,6 +111,7 @@ export default function TriageScreen() {
   // setting mid-card or other re-renders do not replay the audio.
   useEffect(() => {
     if (!current) return;
+    setRevealed(false);
     Speech.stop();
     const utterance = spokenForm(current.card);
     Speech.speak(utterance, { language: 'de-DE' });
@@ -217,20 +225,49 @@ export default function TriageScreen() {
         {deck ? ` / ${deck.word_count_per_week}` : ''}
       </ThemedText>
 
-      {/* The card scrolls on its own so a long term never pushes the three
+      {/* The card scrolls on its own so a long term never pushes the two
           decision buttons off the bottom of the screen. */}
       <ScrollView
         style={styles.cardScroll}
         contentContainerStyle={styles.cardScrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <ThemedView style={styles.card}>
-          <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
-          <ThemedText style={styles.term}>{card.term_de}</ThemedText>
-          {card.levels.length > 0 && (
-            <ThemedText style={styles.muted}>level: {card.levels.join(', ')}</ThemedText>
-          )}
-        </ThemedView>
+        {/* Tap to check the meaning before deciding. Useful for the words that
+            look familiar without quite surfacing. */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => setRevealed((prev) => !prev)}
+          accessibilityRole="button"
+          accessibilityLabel={isJa ? '意味を表示' : 'Reveal the meaning'}
+        >
+          <ThemedView style={styles.card}>
+            <ThemedText style={styles.article}>{card.article ?? ''}</ThemedText>
+            <ThemedText style={styles.term}>{card.term_de}</ThemedText>
+            {card.levels.length > 0 && (
+              <ThemedText style={styles.muted}>level: {card.levels.join(', ')}</ThemedText>
+            )}
+
+            {revealed ? (
+              <View style={styles.backFace}>
+                {card.translations_ja.length > 0 && (
+                  <ThemedText style={styles.translation}>
+                    {card.translations_ja.join(' / ')}
+                  </ThemedText>
+                )}
+                {card.translations_en.length > 0 && (
+                  <ThemedText style={styles.translationEn}>
+                    {card.translations_en.join(' / ')}
+                  </ThemedText>
+                )}
+                {card.plural && <ThemedText style={styles.muted}>Pl: {card.plural}</ThemedText>}
+              </View>
+            ) : (
+              <ThemedText style={styles.flipHint}>
+                {isJa ? 'タップして意味を表示' : 'Tap to reveal'}
+              </ThemedText>
+            )}
+          </ThemedView>
+        </TouchableOpacity>
       </ScrollView>
 
       <View style={styles.buttonsColumn}>
@@ -291,6 +328,16 @@ const styles = StyleSheet.create({
   },
   article: { fontSize: 18, opacity: 0.6, fontStyle: 'italic', textAlign: 'center' },
   term: { fontSize: 32, fontWeight: '700', marginVertical: 4, textAlign: 'center', lineHeight: 40 },
+  backFace: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#666',
+    gap: 6,
+  },
+  translation: { fontSize: 22, fontWeight: '600', textAlign: 'center' },
+  translationEn: { fontSize: 15, opacity: 0.75, textAlign: 'center' },
+  flipHint: { textAlign: 'center', fontSize: 12, opacity: 0.45, marginTop: 10 },
   buttonsColumn: { gap: 10 },
   tButton: { padding: 16, borderRadius: 10, alignItems: 'center' },
   tButtonDisabled: { opacity: 0.4 },
