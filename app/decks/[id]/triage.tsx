@@ -2,14 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -23,6 +16,7 @@ import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
 import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import type { TriageButton as TriageChoice } from '@/lib/seki/triage';
 import { spokenForm } from '@/lib/tts/spokenForm';
+import { notify, notifyAsync } from '@/lib/ui/notify';
 
 interface PendingItem {
   userCard: UserCardRow;
@@ -50,6 +44,9 @@ export default function TriageScreen() {
   const [stats, setStats] = useState<Stats>({ known: 0, unknown: 0 });
   // Flipped state of the current card. Reset whenever the card changes.
   const [revealed, setRevealed] = useState(false);
+  // What was answered for each card in this sitting. Only needed so that
+  // stepping back and changing an answer adjusts the counters correctly.
+  const [decided, setDecided] = useState<Record<string, TriageChoice>>({});
   // Mirrors the session screen: read the user's audio-repeat setting once
   // on mount and replay the German term that many times when each new
   // triage card mounts.
@@ -89,8 +86,9 @@ export default function TriageScreen() {
       setPending(items);
       setIndex(0);
       setRevealed(false);
+      setDecided({});
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -130,19 +128,19 @@ export default function TriageScreen() {
     if (currentUnknowns >= deck.word_count_per_week) return false;
     const result = await expandDeckToNextLevel(deckId, user.id);
     if (!result.addedLevel || result.addedCount === 0) return false;
-    Alert.alert(
+    await notifyAsync(
       isJa ? 'レベルを追加しました' : 'Added another level',
       isJa
         ? `現在のレベルだけでは目標の ${deck.word_count_per_week} 語に届きません（「知らない」: ${currentUnknowns} 語）。${result.addedLevel} を追加しました（${result.addedCount} 語）。続けてトリアージしてください。`
         : `The selected levels do not hold enough unknown words for the target of ${deck.word_count_per_week} ("don't know": ${currentUnknowns}). ${result.addedLevel} has been added (${result.addedCount} cards). Please continue the triage.`,
-      [{ text: 'OK', onPress: () => void loadPending() }],
     );
+    await loadPending();
     return true;
   };
 
-  const finish = (finalStats: Stats) => {
+  const finish = async (finalStats: Stats) => {
     const target = deck?.word_count_per_week ?? 0;
-    Alert.alert(
+    await notifyAsync(
       isJa ? 'トリアージ完了' : 'Triage complete',
       isJa
         ? `「知らない」 ${finalStats.unknown} 語${
@@ -155,8 +153,14 @@ export default function TriageScreen() {
               ? ` (target was ${target}; you can still start the deck with what you have)`
               : ''
           }`,
-      [{ text: 'OK', onPress: () => router.back() }],
     );
+    router.back();
+  };
+
+  const goBack = () => {
+    if (busy || index === 0) return;
+    setIndex(index - 1);
+    setRevealed(false);
   };
 
   const handleTriage = async (status: TriageChoice) => {
@@ -164,26 +168,31 @@ export default function TriageScreen() {
     setBusy(true);
     try {
       await updateTriage(current.userCard.id, status);
+      // A card reached by stepping back already counted once. Subtract that
+      // earlier answer so changing your mind corrects the totals rather than
+      // adding to them.
+      const previous = decided[current.userCard.id];
       const nextStats: Stats = {
-        known: stats.known + (status === 'known' ? 1 : 0),
-        unknown: stats.unknown + (status === 'unknown' ? 1 : 0),
+        known: stats.known + (status === 'known' ? 1 : 0) - (previous === 'known' ? 1 : 0),
+        unknown: stats.unknown + (status === 'unknown' ? 1 : 0) - (previous === 'unknown' ? 1 : 0),
       };
       setStats(nextStats);
+      setDecided((prev) => ({ ...prev, [current.userCard.id]: status }));
 
       // Stop early as soon as the user has secured W unknown words.
       if (deck && nextStats.unknown >= deck.word_count_per_week) {
-        finish(nextStats);
+        await finish(nextStats);
         return;
       }
 
       if (index + 1 >= pending.length) {
         const expanded = await tryExpand(nextStats.unknown);
-        if (!expanded) finish(nextStats);
+        if (!expanded) await finish(nextStats);
       } else {
         setIndex(index + 1);
       }
     } catch (err) {
-      Alert.alert('Save failed', (err as Error).message);
+      notify('Save failed', (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -220,10 +229,21 @@ export default function TriageScreen() {
       <ThemedText style={styles.progress}>
         {index + 1} / {pending.length}
       </ThemedText>
-      <ThemedText style={styles.muted}>
-        ✓{stats.known} · ?{stats.unknown}
-        {deck ? ` / ${deck.word_count_per_week}` : ''}
-      </ThemedText>
+      <View style={styles.statusRow}>
+        {index > 0 ? (
+          <TouchableOpacity
+            onPress={goBack}
+            disabled={busy}
+            style={[styles.backChip, busy && styles.backChipDisabled]}
+          >
+            <ThemedText style={styles.backChipText}>‹ {isJa ? '戻る' : 'Back'}</ThemedText>
+          </TouchableOpacity>
+        ) : null}
+        <ThemedText style={styles.muted}>
+          ✓{stats.known} · ?{stats.unknown}
+          {deck ? ` / ${deck.word_count_per_week}` : ''}
+        </ThemedText>
+      </View>
 
       {/* The card scrolls on its own so a long term never pushes the two
           decision buttons off the bottom of the screen. */}
@@ -314,6 +334,16 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, gap: 16 },
   progress: { textAlign: 'center', fontSize: 18, fontWeight: '600' },
   muted: { opacity: 0.6, textAlign: 'center' },
+  statusRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 12 },
+  backChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+  },
+  backChipDisabled: { opacity: 0.4 },
+  backChipText: { color: '#0a7ea4', fontWeight: '600' },
   cardScroll: { flex: 1 },
   cardScrollContent: { flexGrow: 1, justifyContent: 'center' },
   card: {

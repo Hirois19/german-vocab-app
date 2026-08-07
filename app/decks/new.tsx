@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -16,6 +15,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { createMainDeck } from '@/lib/db/deckBuilder';
 import type { CefrLevel } from '@/lib/seki/types';
+import { notify } from '@/lib/ui/notify';
 
 const LEVEL_OPTIONS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1'];
 const W_OPTIONS = [350, 700];
@@ -66,7 +66,7 @@ export default function NewDeckScreen() {
     } catch (err) {
       const msg = (err as Error).message || 'Unknown error';
       setErrorMsg(msg);
-      Alert.alert('Create failed', msg);
+      notify('Create failed', msg);
       setBusy(false);
     }
   };

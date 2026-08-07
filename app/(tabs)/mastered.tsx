@@ -1,13 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  View,
-  useWindowDimensions,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { LineChart } from '@/components/charts/line-chart';
 import { ThemedText } from '@/components/themed-text';
@@ -17,6 +10,7 @@ import { listAllByUser } from '@/lib/db/userCards';
 import type { UserCardRow } from '@/lib/db/types';
 import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { aggregateMasteredOverTime } from '@/lib/stats/aggregate';
+import { notify } from '@/lib/ui/notify';
 
 export default function MasteredScreen() {
   const { user } = useAuth();
@@ -31,7 +25,7 @@ export default function MasteredScreen() {
       const uc = await listAllByUser(user.id);
       setUserCards(uc);
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }

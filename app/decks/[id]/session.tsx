@@ -2,14 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as Speech from 'expo-speech';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { TagPicker } from '@/components/tag-picker';
@@ -29,6 +22,7 @@ import type { RatingButton as RatingChoice } from '@/lib/seki/types';
 import { dailyShuffleSeed, seededShuffle } from '@/lib/seki/shuffle';
 import { effectiveDeck, sessionBatch, type TriageButton } from '@/lib/seki/triage';
 import { spokenForm } from '@/lib/tts/spokenForm';
+import { notify, notifyAsync } from '@/lib/ui/notify';
 import { isOfflineError } from '@/lib/sync/connectivity';
 import {
   queuedAdvanceDeckDay,
@@ -177,7 +171,7 @@ export default function SessionScreen() {
       setIndex(resumeIndex);
       setRevealed(false);
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -230,16 +224,19 @@ export default function SessionScreen() {
       if (advanced.isComplete) {
         try {
           const summary = await evaluateWeakOnCompletion(deck.id, user.id);
-          Alert.alert(
+          await notifyAsync(
             'Deck complete!',
             `Weak: ${summary.weak} · Mastered: ${summary.mastered}. ` +
               'Visit the Decks tab to spawn a 苦手デッキ from the weak pool.',
           );
         } catch (e) {
-          Alert.alert('Deck complete!', `Could not evaluate weak words: ${(e as Error).message}`);
+          await notifyAsync(
+            'Deck complete!',
+            `Could not evaluate weak words: ${(e as Error).message}`,
+          );
         }
       } else {
-        Alert.alert('Session complete', `Tomorrow: Day ${advanced.deck.current_day}.`);
+        await notifyAsync('Session complete', `Tomorrow: Day ${advanced.deck.current_day}.`);
       }
       router.back();
     } else {
@@ -266,7 +263,7 @@ export default function SessionScreen() {
       }
       // For 'unknown' we stay on the same card and the reveal/rate UI will render next.
     } catch (err) {
-      Alert.alert('Triage save failed', (err as Error).message);
+      notify('Triage save failed', (err as Error).message);
     } finally {
       setBusy(false);
     }
@@ -299,7 +296,7 @@ export default function SessionScreen() {
       }
       await advanceOrFinish();
     } catch (err) {
-      Alert.alert('Save failed', (err as Error).message);
+      notify('Save failed', (err as Error).message);
     } finally {
       setBusy(false);
     }

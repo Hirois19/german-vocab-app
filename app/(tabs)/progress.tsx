@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { LevelProgressBar } from '@/components/charts/level-progress-bar';
 import { StackedBarChart } from '@/components/charts/stacked-bar-chart';
@@ -20,6 +20,7 @@ import {
   type LevelProgress,
 } from '@/lib/stats/aggregate';
 import type { CefrLevel } from '@/lib/seki/types';
+import { notify } from '@/lib/ui/notify';
 
 export default function ProgressScreen() {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ export default function ProgressScreen() {
       }
       setLevelProgress(aggregateLevelProgress(userCards, cardLevel, levelTotals));
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }

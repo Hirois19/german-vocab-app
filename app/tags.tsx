@@ -10,7 +10,7 @@
 
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -18,6 +18,7 @@ import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { listAvailableTags, type AvailableTag } from '@/lib/db/cards';
 import { listAllByUser } from '@/lib/db/userCards';
+import { notify } from '@/lib/ui/notify';
 
 interface TagWithCount extends AvailableTag {
   count: number;
@@ -52,7 +53,7 @@ export default function TagsScreen() {
       }
       setTags(available.map((t) => ({ ...t, count: counts.get(t.name) ?? 0 })));
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,6 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -19,6 +18,7 @@ import { listAllReviews } from '@/lib/db/reviews';
 import type { ReviewRow } from '@/lib/db/types';
 import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { aggregateByMonthsBucket, aggregateByWeek } from '@/lib/stats/aggregate';
+import { notify } from '@/lib/ui/notify';
 
 type Granularity = 'week' | 'month' | '3month' | '6month' | 'year';
 
@@ -58,7 +58,7 @@ export default function TrendScreen() {
       const r = await listAllReviews(user.id);
       setReviews(r);
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }

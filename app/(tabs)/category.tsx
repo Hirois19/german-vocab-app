@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 
 import { HorizontalBarChart } from '@/components/charts/horizontal-bar-chart';
 import { ThemedText } from '@/components/themed-text';
@@ -12,6 +12,7 @@ import type { CardRow, ReviewRow, UserCardRow } from '@/lib/db/types';
 import { listAllByUser } from '@/lib/db/userCards';
 import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { aggregateByArticle, aggregateByPos } from '@/lib/stats/aggregate';
+import { notify } from '@/lib/ui/notify';
 
 export default function CategoryScreen() {
   const { user } = useAuth();
@@ -31,7 +32,7 @@ export default function CategoryScreen() {
       const c = await listCardsByIds(cardIds);
       setCards(c);
     } catch (err) {
-      Alert.alert('Load failed', (err as Error).message);
+      notify('Load failed', (err as Error).message);
     } finally {
       setLoading(false);
     }

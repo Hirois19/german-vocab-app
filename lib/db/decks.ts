@@ -134,8 +134,18 @@ export async function switchActiveDeck(userId: string, targetDeckId: string): Pr
 
 export async function deleteDeck(deckId: string): Promise<void> {
   // ON DELETE CASCADE on user_cards / reviews / card_tags handles dependent rows.
-  const { error } = await supabase.from(TABLE).delete().eq('id', deckId);
+  //
+  // Ask for the deleted rows back and check we got one. PostgREST answers a
+  // DELETE that matched nothing with a plain success, so without this a row
+  // the policy hides would look exactly like a successful delete and the deck
+  // would simply reappear on the next refresh.
+  const { data, error } = await supabase.from(TABLE).delete().eq('id', deckId).select('id');
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error(
+      'The deck was not deleted. It may already be gone, or this account may not own it.',
+    );
+  }
 }
 
 export interface AdvanceResult {

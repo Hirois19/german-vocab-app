@@ -1,13 +1,6 @@
 import { Link, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -23,6 +16,7 @@ import {
 } from '@/lib/db/decks';
 import type { DeckRow } from '@/lib/db/types';
 import { confirmAsync } from '@/lib/ui/confirm';
+import { notify } from '@/lib/ui/notify';
 
 const STATUS_COLORS: Record<DeckRow['status'], string> = {
   active: '#3a8a4f',
@@ -49,7 +43,7 @@ export default function DecksScreen() {
       setDecks(ds);
       setWeakPoolSize(weakIds.length);
     } catch (err) {
-      Alert.alert('Load error', (err as Error).message);
+      notify('Load error', (err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -71,7 +65,7 @@ export default function DecksScreen() {
       await createWeakDeck({ userId: user.id, name, wordCountPerWeek: W });
       await refresh();
     } catch (err) {
-      Alert.alert('Create weak deck failed', (err as Error).message);
+      notify('Create weak deck failed', (err as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -92,7 +86,7 @@ export default function DecksScreen() {
       await switchActiveDeck(user.id, deck.id);
       await refresh();
     } catch (err) {
-      Alert.alert('Activate failed', (err as Error).message);
+      notify('Activate failed', (err as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -105,7 +99,7 @@ export default function DecksScreen() {
       await pauseActiveDeck(user.id);
       await refresh();
     } catch (err) {
-      Alert.alert('Pause failed', (err as Error).message);
+      notify('Pause failed', (err as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -126,7 +120,7 @@ export default function DecksScreen() {
       await deleteDeck(deck.id);
       await refresh();
     } catch (err) {
-      Alert.alert('Delete failed', (err as Error).message);
+      notify('Delete failed', (err as Error).message);
     } finally {
       setBusyId(null);
     }
@@ -145,7 +139,7 @@ export default function DecksScreen() {
       }
       await refresh();
     } catch (err) {
-      Alert.alert('Resume failed', (err as Error).message);
+      notify('Resume failed', (err as Error).message);
     } finally {
       setBusyId(null);
     }

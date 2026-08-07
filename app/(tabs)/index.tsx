@@ -1,14 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { SyncStatus } from '@/components/sync-status';
 import { ThemedText } from '@/components/themed-text';
@@ -19,6 +12,7 @@ import { getActiveDeck } from '@/lib/db/decks';
 import type { DeckRow } from '@/lib/db/types';
 import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
+import { notify } from '@/lib/ui/notify';
 
 export default function TodayScreen() {
   const { t, i18n } = useTranslation();
@@ -35,7 +29,7 @@ export default function TodayScreen() {
       setCardCount(count);
       setActiveDeck(deck);
     } catch (err) {
-      Alert.alert('Load error', (err as Error).message);
+      notify('Load error', (err as Error).message);
     } finally {
       setLoading(false);
     }
