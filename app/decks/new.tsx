@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { createMainDeck } from '@/lib/db/deckBuilder';
+import { MAX_DECK_NAME_LENGTH } from '@/lib/seki/deckName';
 import type { CefrLevel } from '@/lib/seki/types';
 import { notify } from '@/lib/ui/notify';
 
@@ -94,6 +95,7 @@ export default function NewDeckScreen() {
               setName(text);
               setNameEditedByUser(true);
             }}
+            maxLength={MAX_DECK_NAME_LENGTH}
             editable={!busy}
           />
         </View>

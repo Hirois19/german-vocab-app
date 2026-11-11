@@ -1,6 +1,14 @@
 import { Link, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -9,12 +17,15 @@ import { useUserChanges } from '@/lib/realtime/useUserChanges';
 import { createWeakDeck, listAvailableWeakCardIds } from '@/lib/db/deckBuilder';
 import {
   activateDeck,
+  DeckNameError,
   deleteDeck,
   listDecks,
   pauseActiveDeck,
+  renameDeck,
   switchActiveDeck,
 } from '@/lib/db/decks';
 import type { DeckRow } from '@/lib/db/types';
+import { MAX_DECK_NAME_LENGTH } from '@/lib/seki/deckName';
 import { confirmAsync } from '@/lib/ui/confirm';
 import { notify } from '@/lib/ui/notify';
 
@@ -27,6 +38,8 @@ const STATUS_COLORS: Record<DeckRow['status'], string> = {
 
 export default function DecksScreen() {
   const { user } = useAuth();
+  const { i18n } = useTranslation();
+  const isJa = i18n.language === 'ja';
   const [decks, setDecks] = useState<DeckRow[]>([]);
   const [weakPoolSize, setWeakPoolSize] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -126,6 +139,30 @@ export default function DecksScreen() {
     }
   };
 
+  // Returns true when the rename was saved (or was a no-op), so the card can
+  // leave edit mode. On failure the card stays in edit mode with the dialog shown.
+  const handleRename = async (deck: DeckRow, rawName: string): Promise<boolean> => {
+    if (rawName.trim() === deck.name) return true;
+    setBusyId(deck.id);
+    try {
+      await renameDeck(deck.id, rawName);
+      await refresh();
+      return true;
+    } catch (err) {
+      if (err instanceof DeckNameError) {
+        notify(
+          isJa ? '名前を変更できません' : 'Cannot rename',
+          deckNameErrorMessage(err.code, isJa),
+        );
+      } else {
+        notify('Rename failed', (err as Error).message);
+      }
+      return false;
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleResume = async (deck: DeckRow) => {
     if (!user) return;
     setBusyId(deck.id);
@@ -207,6 +244,8 @@ export default function DecksScreen() {
                 router.push({ pathname: '/decks/[id]/session', params: { id: item.id } })
               }
               onDelete={() => handleDelete(item)}
+              onRename={(name) => handleRename(item, name)}
+              isJa={isJa}
             />
           )}
         />
@@ -224,6 +263,8 @@ interface DeckCardProps {
   onStartTriage: () => void;
   onStartSession: () => void;
   onDelete: () => void;
+  onRename: (name: string) => Promise<boolean>;
+  isJa: boolean;
 }
 
 function DeckCard({
@@ -235,14 +276,39 @@ function DeckCard({
   onStartTriage,
   onStartSession,
   onDelete,
+  onRename,
+  isJa,
 }: DeckCardProps) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(deck.name);
   const cycle = Math.ceil(deck.current_day / 7);
   const batch = ((deck.current_day - 1) % 7) + 1;
+
+  const startRename = () => {
+    setDraft(deck.name);
+    setEditing(true);
+  };
+  const saveRename = async () => {
+    if (await onRename(draft)) setEditing(false);
+  };
 
   return (
     <ThemedView style={styles.card}>
       <View style={styles.cardHeader}>
-        <ThemedText type="subtitle">{deck.name}</ThemedText>
+        {editing ? (
+          <TextInput
+            style={styles.nameInput}
+            value={draft}
+            onChangeText={setDraft}
+            maxLength={MAX_DECK_NAME_LENGTH}
+            autoFocus
+            editable={!busy}
+            onSubmitEditing={saveRename}
+            returnKeyType="done"
+          />
+        ) : (
+          <ThemedText type="subtitle">{deck.name}</ThemedText>
+        )}
         <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[deck.status] }]}>
           <ThemedText style={styles.statusText}>{deck.status}</ThemedText>
         </View>
@@ -273,6 +339,27 @@ function DeckCard({
         {deck.status === 'completed' && (
           <ThemedText style={styles.muted}>Completed all 49 days.</ThemedText>
         )}
+        {editing ? (
+          <>
+            <ActionButton
+              label={isJa ? '保存' : 'Save'}
+              onPress={saveRename}
+              disabled={busy}
+              primary
+            />
+            <ActionButton
+              label={isJa ? 'キャンセル' : 'Cancel'}
+              onPress={() => setEditing(false)}
+              disabled={busy}
+            />
+          </>
+        ) : (
+          <ActionButton
+            label={isJa ? '名前を変更' : 'Rename'}
+            onPress={startRename}
+            disabled={busy}
+          />
+        )}
         <TouchableOpacity
           style={[styles.deleteButton, busy && styles.actionButtonDisabled]}
           onPress={onDelete}
@@ -283,6 +370,21 @@ function DeckCard({
       </View>
     </ThemedView>
   );
+}
+
+function deckNameErrorMessage(code: DeckNameError['code'], isJa: boolean): string {
+  switch (code) {
+    case 'empty':
+      return isJa ? 'デッキ名を入力してください。' : 'Enter a deck name.';
+    case 'too_long':
+      return isJa
+        ? `デッキ名は ${MAX_DECK_NAME_LENGTH} 文字以内にしてください。`
+        : `The deck name can be at most ${MAX_DECK_NAME_LENGTH} characters.`;
+    case 'duplicate':
+      return isJa
+        ? '同じ名前のデッキがすでにあります。別の名前を付けてください。'
+        : 'A deck with this name already exists. Please choose another name.';
+  }
 }
 
 function ActionButton({
@@ -339,6 +441,18 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#888',
     gap: 6,
+  },
+  nameInput: {
+    flex: 1,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#444',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    fontSize: 16,
+    color: '#fff',
+    backgroundColor: '#1a1a1a',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },

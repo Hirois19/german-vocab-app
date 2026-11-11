@@ -13,6 +13,7 @@
 
 import { supabase } from './supabase';
 import type { DeckRow } from './types';
+import { validateDeckName } from '../seki/deckName';
 import type { CefrLevel, DeckKind, TriageMode } from '../seki/types';
 
 const TABLE = 'decks';
@@ -50,6 +51,41 @@ export async function createDeck(input: CreateDeckInput): Promise<DeckRow> {
 export async function updateDeckLevels(deckId: string, levels: CefrLevel[]): Promise<void> {
   const { error } = await supabase.from(TABLE).update({ levels }).eq('id', deckId);
   if (error) throw error;
+}
+
+/** Why a rename was refused; the UI maps each code to a localized message. */
+export type DeckNameErrorCode = 'empty' | 'too_long' | 'duplicate';
+
+export class DeckNameError extends Error {
+  readonly code: DeckNameErrorCode;
+  constructor(code: DeckNameErrorCode) {
+    super(`Invalid deck name: ${code}`);
+    this.name = 'DeckNameError';
+    this.code = code;
+  }
+}
+
+/**
+ * Rename a deck (any kind or status). The name is trimmed and validated; a name
+ * the user already uses on another deck violates the `(user_id, name)` unique
+ * index (Postgres 23505) and is reported as `DeckNameError('duplicate')`.
+ * Renaming to the deck's current name updates the row to the same value, which
+ * does not conflict with itself.
+ */
+export async function renameDeck(deckId: string, rawName: string): Promise<DeckRow> {
+  const checked = validateDeckName(rawName);
+  if (!checked.ok) throw new DeckNameError(checked.reason);
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({ name: checked.name })
+    .eq('id', deckId)
+    .select('*')
+    .single();
+  if (error) {
+    if (error.code === '23505') throw new DeckNameError('duplicate');
+    throw error;
+  }
+  return data as DeckRow;
 }
 
 export async function listDecks(userId: string): Promise<DeckRow[]> {
