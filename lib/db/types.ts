@@ -46,6 +46,8 @@ export interface DeckRow {
   current_day: number;
   status: DeckStatus;
   triage_mode: TriageMode;
+  /** Levels the deck covers (pedagogical order). NULL for decks created before migration 0012. */
+  levels: CefrLevel[] | null;
   start_date: string | null;
   last_session_date: string | null;
   created_at: string;

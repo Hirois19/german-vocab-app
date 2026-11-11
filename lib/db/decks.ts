@@ -13,7 +13,7 @@
 
 import { supabase } from './supabase';
 import type { DeckRow } from './types';
-import type { DeckKind, TriageMode } from '../seki/types';
+import type { CefrLevel, DeckKind, TriageMode } from '../seki/types';
 
 const TABLE = 'decks';
 
@@ -23,6 +23,7 @@ export interface CreateDeckInput {
   kind: DeckKind;
   wordCountPerWeek: number;
   triageMode?: TriageMode;
+  levels?: CefrLevel[] | null;
   parentDeckId?: string | null;
 }
 
@@ -35,6 +36,7 @@ export async function createDeck(input: CreateDeckInput): Promise<DeckRow> {
       kind: input.kind,
       word_count_per_week: input.wordCountPerWeek,
       triage_mode: input.triageMode ?? 'bulk',
+      levels: input.levels ?? null,
       parent_deck_id: input.parentDeckId ?? null,
       status: 'pending',
       current_day: 1,
@@ -43,6 +45,11 @@ export async function createDeck(input: CreateDeckInput): Promise<DeckRow> {
     .single();
   if (error) throw error;
   return data as DeckRow;
+}
+
+export async function updateDeckLevels(deckId: string, levels: CefrLevel[]): Promise<void> {
+  const { error } = await supabase.from(TABLE).update({ levels }).eq('id', deckId);
+  if (error) throw error;
 }
 
 export async function listDecks(userId: string): Promise<DeckRow[]> {

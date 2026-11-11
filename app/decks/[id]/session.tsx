@@ -19,7 +19,7 @@ import { listActiveByDeck } from '@/lib/db/userCards';
 import { getOrCreate as getOrCreateUserSettings } from '@/lib/db/userSettings';
 import { batchAssignmentForDay } from '@/lib/seki/scheduler';
 import type { RatingButton as RatingChoice } from '@/lib/seki/types';
-import { dailyShuffleSeed, seededShuffle } from '@/lib/seki/shuffle';
+import { sessionOrder } from '@/lib/seki/shuffle';
 import { effectiveDeck, sessionBatch, type TriageButton } from '@/lib/seki/triage';
 import { spokenForm } from '@/lib/tts/spokenForm';
 import { notify, notifyAsync } from '@/lib/ui/notify';
@@ -103,7 +103,7 @@ export default function SessionScreen() {
       // always shuffles the same way (reloading does not reshuffle), and
       // each new day gets a different order. Batch membership itself is not
       // touched, so day N+1 does not steal day N's cards.
-      const sessionable = seededShuffle(batch, dailyShuffleSeed(deckId, d.current_day));
+      const sessionable = sessionOrder(batch, deckId, d.current_day);
       // Bulk-fetch all cards in one round trip instead of N+1.
       const cardsById = new Map(
         (await listCardsByIdsCached(sessionable.map((uc) => uc.card_id))).map((c) => [c.id, c]),

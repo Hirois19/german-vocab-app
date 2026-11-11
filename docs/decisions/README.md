@@ -12,3 +12,5 @@ deliberately short so the reasoning stays readable.
 | [0004](0004-offline-first-sync.md)               | Offline writes via a mutation outbox, not a full SQLite mirror  |
 | [0005](0005-expo-over-flutter-native.md)         | Expo (managed React Native) over Flutter or bare React Native   |
 | [0006](0006-rls-from-day-one.md)                 | Row Level Security on every user table from the first migration |
+| [0010](0010-deck-level-top-up.md)                | Top up a deck with the rest of its levels before a new level    |
+| [0011](0011-random-card-order.md)                | Random card order: shuffle at provisioning and per session      |

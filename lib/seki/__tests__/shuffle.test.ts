@@ -1,4 +1,11 @@
-import { dailyShuffleSeed, hash32, mulberry32, seededShuffle } from '../shuffle';
+import {
+  dailyShuffleSeed,
+  hash32,
+  mulberry32,
+  seededShuffle,
+  sessionOrder,
+  shuffle,
+} from '../shuffle';
 
 describe('hash32', () => {
   it('is deterministic for the same input', () => {
@@ -89,5 +96,48 @@ describe('dailyShuffleSeed', () => {
     const a = dailyShuffleSeed('deck-abc', 3);
     const b = dailyShuffleSeed('deck-xyz', 3);
     expect(a).not.toBe(b);
+  });
+});
+
+describe('shuffle (injectable RNG)', () => {
+  const input = Array.from({ length: 50 }, (_, i) => i);
+
+  it('returns a permutation of the input', () => {
+    const out = shuffle(input);
+    expect(out).toHaveLength(input.length);
+    expect(out.slice().sort((a, b) => a - b)).toEqual(input);
+  });
+
+  it('does not mutate the input', () => {
+    const before = input.slice();
+    shuffle(input);
+    expect(input).toEqual(before);
+  });
+
+  it('is deterministic with a seeded RNG', () => {
+    expect(shuffle(input, mulberry32(5))).toEqual(shuffle(input, mulberry32(5)));
+    expect(shuffle(input, mulberry32(5))).not.toEqual(shuffle(input, mulberry32(6)));
+  });
+
+  it('actually reorders a larger input', () => {
+    expect(shuffle(input, mulberry32(1))).not.toEqual(input);
+  });
+});
+
+describe('sessionOrder', () => {
+  const batch = Array.from({ length: 100 }, (_, i) => `card-${i}`);
+
+  it('is a permutation of the day batch', () => {
+    const out = sessionOrder(batch, 'deck-1', 3);
+    expect(out.slice().sort()).toEqual(batch.slice().sort());
+  });
+
+  it('gives the same order for the same deck and day', () => {
+    expect(sessionOrder(batch, 'deck-1', 3)).toEqual(sessionOrder(batch, 'deck-1', 3));
+  });
+
+  it('gives different orders on different days, including the same batch a cycle later', () => {
+    expect(sessionOrder(batch, 'deck-1', 3)).not.toEqual(sessionOrder(batch, 'deck-1', 4));
+    expect(sessionOrder(batch, 'deck-1', 3)).not.toEqual(sessionOrder(batch, 'deck-1', 10));
   });
 });

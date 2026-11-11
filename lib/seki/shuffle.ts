@@ -1,5 +1,6 @@
 /**
- * Deterministic seeded shuffle for the daily session.
+ * Shuffle helpers: a Fisher-Yates with an injectable RNG (used when a deck is
+ * provisioned) and a deterministic seeded shuffle for the daily session.
  *
  * Why deterministic: the cards a user sees on day N must always be the same
  * SET (the SEKI batch boundaries are fixed by position), but within that day
@@ -7,8 +8,8 @@
  * (deckId, day) gives a stable random-looking order — reloads mid-session do
  * not reshuffle, and day N+1 gets a different order than day N.
  *
- * Implementation: a 32-bit string hash for the seed, then mulberry32 to draw
- * uniform doubles, then Fisher-Yates. All pure functions, easy to test.
+ * Seeded implementation: a 32-bit string hash for the seed, then mulberry32 to
+ * draw uniform doubles, then Fisher-Yates. All pure functions, easy to test.
  */
 
 /** djb2-ish 32-bit string hash. Returns a non-negative integer. */
@@ -32,10 +33,13 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-/** Return a new array with the input shuffled by Fisher-Yates using the given seed. */
-export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
+/**
+ * Return a new array with the input shuffled by Fisher-Yates. The random source
+ * is injectable (uniform [0,1)); it defaults to `Math.random`. The input is
+ * never mutated.
+ */
+export function shuffle<T>(items: readonly T[], rand: () => number = Math.random): T[] {
   const out = items.slice();
-  const rand = mulberry32(seed);
   for (let i = out.length - 1; i > 0; i -= 1) {
     const j = Math.floor(rand() * (i + 1));
     const a = out[i] as T;
@@ -46,6 +50,11 @@ export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
   return out;
 }
 
+/** Return a new array with the input shuffled by Fisher-Yates using the given seed. */
+export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
+  return shuffle(items, mulberry32(seed));
+}
+
 /**
  * Convenience: build the per-day shuffle seed from a deckId and day.
  * The same deck on the same day always shuffles to the same order, so
@@ -53,4 +62,15 @@ export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
  */
 export function dailyShuffleSeed(deckId: string, day: number): number {
   return hash32(`${deckId}:day:${day}`);
+}
+
+/**
+ * Presentation order of one day's session. The batch itself (which words belong
+ * to the day) is fixed by position and is the same in every cycle; only the
+ * order inside the session is shuffled. Keyed on (deckId, day), so reopening or
+ * resuming a session gives the same order, and the same batch on day N and day
+ * N+7 (the next cycle) is shown in a different order.
+ */
+export function sessionOrder<T>(batch: readonly T[], deckId: string, day: number): T[] {
+  return seededShuffle(batch, dailyShuffleSeed(deckId, day));
 }

@@ -9,7 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useAuth } from '@/lib/auth/AuthProvider';
 import { listCardsByIdsCached } from '@/lib/cache/cardsCache';
-import { expandDeckToNextLevel } from '@/lib/db/deckBuilder';
+import { topUpDeck } from '@/lib/db/deckBuilder';
 import { getDeck } from '@/lib/db/decks';
 import { countByTriageStatus, listByDeck, updateTriage } from '@/lib/db/userCards';
 import type { CardRow, DeckRow, UserCardRow } from '@/lib/db/types';
@@ -119,21 +119,31 @@ export default function TriageScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.userCard.id]);
 
-  // Reach for the next CEFR level when the user has triaged everything in
-  // the current batch but still has fewer "unknown" words than the deck's
-  // target W. Returns true if an expansion happened (caller should not
-  // close the screen yet).
+  // Add more cards (the rest of the selected levels, then the next CEFR level)
+  // when the user has triaged everything in the current batch but still has
+  // fewer "unknown" words than the deck's target W. Returns true if cards were
+  // added (caller should not close the screen yet).
   const tryExpand = async (currentUnknowns: number): Promise<boolean> => {
     if (!deck || !user) return false;
     if (currentUnknowns >= deck.word_count_per_week) return false;
-    const result = await expandDeckToNextLevel(deckId, user.id);
-    if (!result.addedLevel || result.addedCount === 0) return false;
-    await notifyAsync(
-      isJa ? 'レベルを追加しました' : 'Added another level',
-      isJa
-        ? `現在のレベルだけでは目標の ${deck.word_count_per_week} 語に届きません（「知らない」: ${currentUnknowns} 語）。${result.addedLevel} を追加しました（${result.addedCount} 語）。続けてトリアージしてください。`
-        : `The selected levels do not hold enough unknown words for the target of ${deck.word_count_per_week} ("don't know": ${currentUnknowns}). ${result.addedLevel} has been added (${result.addedCount} cards). Please continue the triage.`,
-    );
+    const result = await topUpDeck(deckId, user.id);
+    if (result.kind === 'none' || result.addedCount === 0) return false;
+    const target = deck.word_count_per_week;
+    if (result.kind === 'remaining') {
+      await notifyAsync(
+        isJa ? '選択したレベルの残りを追加しました' : 'Added the rest of your levels',
+        isJa
+          ? `読み込み済みの単語だけでは目標の ${target} 語に届きません（「知らない」: ${currentUnknowns} 語）。選択したレベルの残りを追加しました（${result.addedCount} 語）。続けてトリアージしてください。`
+          : `The words loaded so far do not hold enough unknown words for the target of ${target} ("don't know": ${currentUnknowns}). The rest of the selected levels has been added (${result.addedCount} cards). Please continue the triage.`,
+      );
+    } else {
+      await notifyAsync(
+        isJa ? 'レベルを追加しました' : 'Added another level',
+        isJa
+          ? `選択したレベルだけでは目標の ${target} 語に届きません（「知らない」: ${currentUnknowns} 語）。${result.level} を追加しました（${result.addedCount} 語）。続けてトリアージしてください。`
+          : `The selected levels do not hold enough unknown words for the target of ${target} ("don't know": ${currentUnknowns}). ${result.level} has been added (${result.addedCount} cards). Please continue the triage.`,
+      );
+    }
     await loadPending();
     return true;
   };

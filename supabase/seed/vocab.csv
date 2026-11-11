@@ -116,7 +116,8 @@ architekt,der Architekt,der,noun,建築家,architect,,,die Architekten,,A2,germa
 architektin,die Architektin,die,noun,建築家（女）,architect (f),,,die Architektinnen,,A2,german_vocab_master.xlsx,Wohnen | noun | A2
 argument,das Argument,das,noun,論拠,argument,,,die Argumente,,B2,german_vocab_master.xlsx,Medien | noun | B2
 argumentieren,argumentieren,,verb,論じる,to argue,argumentierte,hat argumentiert,,,B2,german_vocab_master.xlsx,Medien | verb | B2
-arm,arm,der,adj,貧しい | 腕,poor / needy / unfortunate | arm,,,die Arme,,B1 | A1,german_vocab_master.xlsx,adj | B1 | noun | A1
+arm,Arm,der,noun,腕,arm,,,die Arme,,A1,german_vocab_master.xlsx,noun | A1
+arm#adj,arm,,adj,貧しい,poor / needy / unfortunate,,,,,B1,german_vocab_master.xlsx,adj | B1
 armut,die Armut,die,noun,貧困,poverty,,,,,C1,german_vocab_master.xlsx,Gesellschaft | noun | C1
 artikel,der Artikel,der,noun,記事／冠詞,article,,,die Artikel,,B2,german_vocab_master.xlsx,Medien | noun | B2
 arzt,der Arzt,der,noun,医者（男）,doctor (m),,,die Ärzte,,A1,german_vocab_master.xlsx,Gesundheit | noun | A1
@@ -642,7 +643,8 @@ erörtern,erörtern,,verb,詳しく論じる,to discuss in detail,erörterte,hat
 es,es,,pron,それ,it,,,,,A1,german_vocab_master.xlsx,pron | A1
 eskalation,die Eskalation,die,noun,エスカレーション,escalation,,,die Eskalationen,,C1,german_vocab_master.xlsx,noun | C1
 eskalieren,eskalieren,,verb,エスカレートする,to escalate,eskalierte,ist eskaliert,,,C1,german_vocab_master.xlsx,verb | C1
-essen,das Essen,das,noun,食事／食べ物 | 食べる,"food, meal | to eat",aß,hat gegessen,die Essen,,A1,german_vocab_master.xlsx,Essen | noun | A1 | verb
+essen,Essen,das,noun,食事／食べ物,"food, meal",,,die Essen,,A1,german_vocab_master.xlsx,Essen | noun | A1
+essen#verb,essen,,verb,食べる,to eat,aß,hat gegessen,,,A1,german_vocab_master.xlsx,Essen | verb | A1
 essig,der Essig,der,noun,酢,vinegar,,,,,A2,german_vocab_master.xlsx,Essen | noun | A2
 esszimmertisch,der Esszimmertisch,der,noun,ダイニングテーブル,dining table,,,die Esszimmertische,,B1,german_vocab_master.xlsx,noun | B1
 etablieren,etablieren,,verb,確立する,to establish,etablierte,hat etabliert,,,C1,german_vocab_master.xlsx,verb | C1
@@ -1320,7 +1322,8 @@ monat,der Monat,der,noun,月,month,,,die Monate,,A1,german_vocab_master.xlsx,Zei
 mond,der Mond,der,noun,月,moon,,,die Monde,,A2,german_vocab_master.xlsx,Zeit | noun | A2
 montag,der Montag,der,noun,月曜日,Monday,,,die Montage,,A1,german_vocab_master.xlsx,Zeit | noun | A1
 mord,der Mord,der,noun,殺人,murder,,,die Morde,,B2,german_vocab_master.xlsx,Politik | noun | B2
-morgen,morgen,der,adv,明日 | 朝,tomorrow | morning,,,die Morgen,,A1,german_vocab_master.xlsx,Zeit | adv | A1 | noun
+morgen,morgen,,adv,明日,tomorrow,,,,,A1,german_vocab_master.xlsx,Zeit | adv | A1
+morgen#noun,Morgen,der,noun,朝,morning,,,die Morgen,,A1,german_vocab_master.xlsx,Zeit | noun | A1
 moschee,die Moschee,die,noun,モスク,mosque,,,die Moscheen,,A2,german_vocab_master.xlsx,noun | A2
 motivation,die Motivation,die,noun,動機付け,motivation,,,die Motivationen,,C1,german_vocab_master.xlsx,noun | C1
 motivieren,motivieren,,verb,動機づける,to motivate,motivierte,hat motiviert,,,C1,german_vocab_master.xlsx,verb | C1
@@ -1447,7 +1450,8 @@ oper,die Oper,die,noun,オペラ,opera,,,die Opern,,A2,german_vocab_master.xlsx,
 operation,die Operation,die,noun,手術,operation,,,die Operationen,,A2,german_vocab_master.xlsx,Gesundheit | noun | A2
 opposition,die Opposition,die,noun,野党,opposition,,,die Oppositionen,,C1,german_vocab_master.xlsx,Politik | noun | C1
 optimal,optimal,,adj,最適な,optimal,,,,,B2,german_vocab_master.xlsx,adj | B2
-orange,orange,die,adj,オレンジ色の | オレンジ,orange,,,die Orangen,uninflected,A1,german_vocab_master.xlsx,Essen | Farben | adj | A1 | noun
+orange,orange,,adj,オレンジ色の,orange,,,,uninflected,A1,german_vocab_master.xlsx,Essen | Farben | adj | A1
+orange#noun,Orange,die,noun,オレンジ,orange,,,die Orangen,,A1,german_vocab_master.xlsx,Essen | Farben | noun | A1
 ordnen,ordnen,,verb,整える,to arrange,ordnete,hat geordnet,,,A2,german_vocab_master.xlsx,verb | A2
 ordner,der Ordner,der,noun,フォルダ,folder,,,die Ordner,,A2,german_vocab_master.xlsx,noun | A2
 ozean,der Ozean,der,noun,海洋,ocean,,,die Ozeane,,A2,german_vocab_master.xlsx,noun | A2
@@ -1691,7 +1695,8 @@ sehen,sehen,,verb,見る,to see,sah,hat gesehen,,,A1,german_vocab_master.xlsx,ve
 sehenswürdigkeit,die Sehenswürdigkeit,die,noun,観光名所,sight,,,die Sehenswürdigkeiten,,A2,german_vocab_master.xlsx,Reisen | noun | A2
 sehnsucht,die Sehnsucht,die,noun,憧れ,longing,,,die Sehnsüchte,,B2,german_vocab_master.xlsx,Gefühle | noun | B2
 sehr,sehr,,adv,とても,very,,,,,A1,german_vocab_master.xlsx,adv | A1
-sein,sein,,pron,彼の | 〜である,his | to be,war,ist gewesen,,irregular,A1,german_vocab_master.xlsx,pron | A1 | verb
+sein,sein,,pron,彼の,his,,,,,A1,german_vocab_master.xlsx,pron | A1
+sein#verb,sein,,verb,〜である,to be,war,ist gewesen,,irregular,A1,german_vocab_master.xlsx,verb | A1
 seit,seit,,prep,〜から,"since, for (time)",,,,+ Dat.,A1,german_vocab_master.xlsx,prep | A1
 seitdem,seitdem,,conj,～以来,since (then),,,,subordinating,A2,german_vocab_master.xlsx,conj | A2
 sekt,der Sekt,der,noun,スパークリングワイン,sparkling wine,,,die Sekte,,A2,german_vocab_master.xlsx,Essen | noun | A2
@@ -1888,15 +1893,17 @@ stipendium,das Stipendium,das,noun,奨学金,scholarship,,,die Stipendien,,A2,ge
 stirn,die Stirn,die,noun,額,forehead,,,die Stirnen,,A2,german_vocab_master.xlsx,noun | A2
 stockwerk,das Stockwerk,das,noun,階／フロア,floor / storey,,,die Stockwerke,,B1,german_vocab_master.xlsx,noun | B1
 stoff,der Stoff,der,noun,素材／物質／布,material / substance / fabric,,,die Stoffe,,B1,german_vocab_master.xlsx,noun | B1
-stolz,stolz,der,adj,誇りに思う | 誇り,proud | pride,,,,,A2 | B2,german_vocab_master.xlsx,Gefühle | adj | A2 | noun | B2
+stolz,stolz,,adj,誇りに思う,proud,,,,,A2,german_vocab_master.xlsx,Gefühle | adj | A2
 stolz auf (+akk.),stolz auf (+Akk.),,adj,〜を誇りに思う,to be proud of,,,,,B1,german_vocab_master.xlsx,adj | B1
+stolz#noun,Stolz,der,noun,誇り,pride,,,,,B2,german_vocab_master.xlsx,Gefühle | noun | B2
 stoßen,stoßen,,verb,押す／ぶつかる,to push / bump into / thrust,stieß,gestoßen,,,B1,german_vocab_master.xlsx,verb | B1
 strafe,die Strafe,die,noun,罰,punishment,,,die Strafen,,B2,german_vocab_master.xlsx,Politik | noun | B2
 strand,der Strand,der,noun,浜辺,beach,,,die Strände,,A2,german_vocab_master.xlsx,noun | A2
 strategie,die Strategie,die,noun,戦略,strategy,,,die Strategien,,B2,german_vocab_master.xlsx,Wirtschaft | noun | B2
 straße,die Straße,die,noun,通り／道,street,,,die Straßen,,A1,german_vocab_master.xlsx,Verkehr | Wohnen | noun | A1
 straßenbahn,die Straßenbahn,die,noun,路面電車,tram,,,die Straßenbahnen,,A2,german_vocab_master.xlsx,Verkehr | Wohnen | noun | A2
-streben,das Streben,das,noun,努力 | 目指す,striving | to strive,strebte,hat gestrebt,,nach,C1,german_vocab_master.xlsx,noun | C1 | verb
+streben,Streben,das,noun,努力,striving,,,,,C1,german_vocab_master.xlsx,noun | C1
+streben#verb,streben,,verb,目指す,to strive,strebte,hat gestrebt,,nach,C1,german_vocab_master.xlsx,verb | C1
 strecke,die Strecke,die,noun,距離／路線,route / distance / stretch,,,die Strecken,,B1,german_vocab_master.xlsx,noun | B1
 streichen,streichen,,verb,塗る／削除する,to paint / cross out / cancel,strich,gestrichen,,,B1,german_vocab_master.xlsx,verb | B1
 streit,der Streit,der,noun,口論,"argument, quarrel",,,die Streite,,A2,german_vocab_master.xlsx,noun | A2
@@ -2334,7 +2341,8 @@ wirtschaft,die Wirtschaft,die,noun,経済,economy,,,die Wirtschaften,,B2,german_
 wirtschaftlich,wirtschaftlich,,adj,経済的な,economic / efficient,,,,,B1,german_vocab_master.xlsx,adj | B1
 wirtschaftslage,die Wirtschaftslage,die,noun,経済状況,economic situation,,,die Wirtschaftslagen,,B2,german_vocab_master.xlsx,Wirtschaft | noun | B2
 wirtschaftspolitik,die Wirtschaftspolitik,die,noun,経済政策,economic policy,,,,,C1,german_vocab_master.xlsx,Wirtschaft | Politik | noun | C1
-wissen,wissen,das,verb,知っている | 知識,to know (fact) | knowledge,wusste,hat gewusst,,,A1 | A2,german_vocab_master.xlsx,verb | A1 | Schule | noun | A2
+wissen,wissen,,verb,知っている,to know (fact),wusste,hat gewusst,,,A1,german_vocab_master.xlsx,verb | A1
+wissen#noun,Wissen,das,noun,知識,knowledge,,,,,A2,german_vocab_master.xlsx,Schule | noun | A2
 wissenschaft,die Wissenschaft,die,noun,科学／学問,science / academic discipline,,,die Wissenschaften,,B1,german_vocab_master.xlsx,noun | B1
 wissenschaftler,der Wissenschaftler,der,noun,科学者,scientist (m),,,die Wissenschaftler,,A2,german_vocab_master.xlsx,noun | A2
 wissenschaftlerin,die Wissenschaftlerin,die,noun,科学者（女）,scientist (f),,,die Wissenschaftlerinnen,,A2,german_vocab_master.xlsx,noun | A2
@@ -2390,8 +2398,9 @@ zitat,das Zitat,das,noun,引用文,quote / citation,,,die Zitate,,B1,german_voca
 zitieren,zitieren,,verb,引用する,to quote,zitierte,hat zitiert,,,B2,german_vocab_master.xlsx,Medien | verb | B2
 zitrone,die Zitrone,die,noun,レモン,lemon,,,die Zitronen,,A2,german_vocab_master.xlsx,Essen | noun | A2
 zornig,zornig,,adj,怒った,angry / furious,,,,,B1,german_vocab_master.xlsx,Gefühle | adj | B1
-zu,zu,,adv,〜すぎる | 〜へ,too | to,,,,+ Dat.,A1,german_vocab_master.xlsx,adv | A1 | prep
+zu,zu,,adv,〜すぎる,too,,,,,A1,german_vocab_master.xlsx,adv | A1
 zu dem schluss kommen,zu dem Schluss kommen,,phrase,結論に達する,to come to the conclusion,,,,,C1,german_vocab_master.xlsx,phrase | C1
+zu#prep,zu,,prep,〜へ,to,,,,+ Dat.,A1,german_vocab_master.xlsx,prep | A1
 zucker,der Zucker,der,noun,砂糖,sugar,,,,no plural,A1,german_vocab_master.xlsx,Essen | noun | A1
 zudem,zudem,,adv,さらに,moreover,,,,,B2,german_vocab_master.xlsx,adv | B2
 zuerst,zuerst,,adv,まず,first of all,,,,,A2,german_vocab_master.xlsx,adv | A2

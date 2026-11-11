@@ -1,9 +1,10 @@
 /**
  * Deck builder: create a new deck and populate its user_cards from the shared
  * dictionary by CEFR level. Pure orchestration over the lower-level repositories.
+ * The chosen levels are stored on the deck so triage can top it up later (ADR 0010).
  *
  * Flow:
- *   1. Fetch all cards matching the chosen levels (ordered by canonical_key).
+ *   1. Fetch all cards matching the chosen levels and shuffle them.
  *   2. Clip the pool to W words (the deck's target size).
  *   3. Create the deck row.
  *   4. Bulk-insert user_cards with positions 1..W, all triage_status='pending'.
@@ -12,14 +13,16 @@
  * and the user marks them known/unknown later.
  */
 
-import { listCardsByIds, listCardsByLevel } from './cards';
-import { createDeck } from './decks';
+import { listAllCardsByLevel, listCardsByIds } from './cards';
+import { createDeck, getDeck, updateDeckLevels } from './decks';
 import { listReviewsForDeck } from './reviews';
 import { supabase } from './supabase';
 import { createMany, listByDeck } from './userCards';
 import { getOrCreate as getOrCreateUserSettings } from './userSettings';
-import type { DeckRow, ReviewRow } from './types';
+import type { CardRow, DeckRow, ReviewRow, UserCardRow } from './types';
 import type { CefrLevel, Rating, TriageMode, UserCardReviewSummary } from '../seki/types';
+import { inferCoveredLevels, nextLevelCandidates, pickNextLevel, sortLevels } from '../seki/levels';
+import { shuffle } from '../seki/shuffle';
 import { isWeakCard } from '../seki/weakDeck';
 
 export interface CreateMainDeckInput {
@@ -126,56 +129,97 @@ export async function listAvailableWeakCardIds(userId: string): Promise<string[]
   return distinct.filter((id) => !taken.has(id));
 }
 
-/** CEFR levels in pedagogical order — used by the auto-expansion in bulk triage. */
-const LEVEL_ORDER: readonly CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+export type TopUpDeckResult =
+  /** The rest of the levels chosen at deck creation was added. */
+  | { kind: 'remaining'; addedCount: number }
+  /** The selected levels were used up; the next level was added. */
+  | { kind: 'nextLevel'; level: CefrLevel; addedCount: number }
+  /** Nothing left to add anywhere. */
+  | { kind: 'none'; addedCount: 0 };
 
-export interface ExpandDeckResult {
-  /** The level that was appended, or null if nothing left to expand into. */
-  addedLevel: CefrLevel | null;
-  addedCount: number;
+/** Every user_card of a deck. Pages because one request returns at most 1000 rows. */
+async function listAllByDeck(deckId: string): Promise<UserCardRow[]> {
+  const PAGE = 1000;
+  const out: UserCardRow[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const page = await listByDeck(deckId, { limit: PAGE, offset });
+    out.push(...page);
+    if (page.length < PAGE) break;
+  }
+  return out;
 }
 
 /**
- * Add the next un-used CEFR level's cards to a deck as new `pending` user_cards.
+ * Top a deck up with more `pending` user_cards when bulk triage runs out of
+ * cards before the user has found W unknowns (ADR 0010).
  *
- * Used by the bulk-triage screen when the user did not find enough "unknown"
- * words within the levels currently in the deck. Cards already in the deck
- * (by `card_id`) are skipped, so this is safe to call repeatedly. New rows
- * are positioned after the deck's current maximum position so the SEKI
- * scheduler picks them up in order.
+ *   1. Add the cards of the levels chosen at deck creation that are not in the
+ *      deck yet (creation only provisions W of them).
+ *   2. If none remain, add the next level (see `pickNextLevel`) and record it
+ *      in `decks.levels`.
+ *
+ * Covered levels come from `decks.levels`. Decks created before migration 0012
+ * have none, so they are inferred once from the deck's cards and saved. Cards
+ * already in the deck (by `card_id`) are skipped, so this is safe to call
+ * repeatedly. New rows are positioned after the deck's current maximum position
+ * so the SEKI scheduler picks them up in order.
  */
-export async function expandDeckToNextLevel(
-  deckId: string,
-  userId: string,
-): Promise<ExpandDeckResult> {
-  const existing = await listByDeck(deckId);
-  if (existing.length === 0) return { addedLevel: null, addedCount: 0 };
-
+export async function topUpDeck(deckId: string, userId: string): Promise<TopUpDeckResult> {
+  const none: TopUpDeckResult = { kind: 'none', addedCount: 0 };
+  const deck = await getDeck(deckId);
+  if (!deck) return none;
+  const existing = await listAllByDeck(deckId);
+  if (existing.length === 0) return none;
   const existingCardIds = new Set(existing.map((uc) => uc.card_id));
-  const existingCards = await listCardsByIds(Array.from(existingCardIds));
-  const covered = new Set<string>();
-  for (const c of existingCards) for (const lv of c.levels) covered.add(lv);
 
-  const nextLevel = LEVEL_ORDER.find((lv) => !covered.has(lv));
-  if (!nextLevel) return { addedLevel: null, addedCount: 0 };
-
-  // Pull the entire next-level pool so the user is guaranteed a chance to
-  // discover enough unknowns. Filter out any cards the deck already holds.
-  const pool = await listCardsByLevel([nextLevel], 5000);
-  const newCards = pool.filter((c) => !existingCardIds.has(c.id));
-  if (newCards.length === 0) return { addedLevel: nextLevel, addedCount: 0 };
+  let covered = deck.levels ? sortLevels(deck.levels) : null;
+  if (covered === null) {
+    const existingCards = await listCardsByIds(Array.from(existingCardIds));
+    covered = inferCoveredLevels(existingCards.map((c) => c.levels));
+    await updateDeckLevels(deckId, covered);
+  }
 
   const maxPosition = existing.reduce((m, uc) => (uc.position > m ? uc.position : m), 0);
-  await createMany(
-    newCards.map((card, idx) => ({
-      userId,
-      deckId,
-      cardId: card.id,
-      position: maxPosition + idx + 1,
-      tags: card.categories ?? [],
-    })),
-  );
-  return { addedLevel: nextLevel, addedCount: newCards.length };
+  const append = async (cards: CardRow[]) => {
+    await createMany(
+      cards.map((card, idx) => ({
+        userId,
+        deckId,
+        cardId: card.id,
+        position: maxPosition + idx + 1,
+        tags: card.categories ?? [],
+      })),
+    );
+  };
+  // Appended cards are shuffled too, so triage does not run alphabetically.
+  const appendShuffled = (cards: CardRow[]) => append(shuffle(cards));
+
+  // Step 1: the rest of the selected levels.
+  if (covered.length > 0) {
+    const pool = await listAllCardsByLevel(covered);
+    const rest = pool.filter((c) => !existingCardIds.has(c.id));
+    if (rest.length > 0) {
+      await appendShuffled(rest);
+      return { kind: 'remaining', addedCount: rest.length };
+    }
+  }
+
+  // Step 2: the next level that still has cards outside the deck.
+  const leftovers = new Map<CefrLevel, CardRow[]>();
+  const remaining: Partial<Record<CefrLevel, number>> = {};
+  for (const lv of nextLevelCandidates(covered)) {
+    const pool = await listAllCardsByLevel([lv]);
+    const rest = pool.filter((c) => !existingCardIds.has(c.id));
+    leftovers.set(lv, rest);
+    remaining[lv] = rest.length;
+  }
+  const level = pickNextLevel(covered, remaining);
+  if (!level) return none;
+
+  const cards = leftovers.get(level) ?? [];
+  await appendShuffled(cards);
+  await updateDeckLevels(deckId, sortLevels([...covered, level]));
+  return { kind: 'nextLevel', level, addedCount: cards.length };
 }
 
 export interface CreateWeakDeckResult {
@@ -228,9 +272,6 @@ export async function createWeakDeck(input: {
   return { deck, populated: slice.length, poolSize: cardIds.length };
 }
 
-/** Hard cap on how many candidate cards a single deck is provisioned with. */
-const MAX_DECK_PROVISION = 5000;
-
 export async function createMainDeck(input: CreateMainDeckInput): Promise<CreateMainDeckResult> {
   if (input.levels.length === 0) {
     throw new Error('At least one CEFR level is required.');
@@ -244,10 +285,11 @@ export async function createMainDeck(input: CreateMainDeckInput): Promise<Create
   // created earlier.
   const triageMode: TriageMode = 'bulk';
 
-  // Bulk mode needs a modest buffer over W: enough candidates that triaging
-  // away the already-known ones still leaves W unknowns.
-  const fetchLimit = Math.min(Math.max(input.wordCountPerWeek * 2, 2000), MAX_DECK_PROVISION);
-  const pool = await listCardsByLevel(input.levels, fetchLimit);
+  // Fetch the complete pool (paged past the 1000-row API cap) and shuffle it, so
+  // the W provisioned cards are a random sample of the chosen levels and the
+  // triage and daily batches follow a random order rather than an alphabetical
+  // one (ADR 0010).
+  const pool = shuffle(await listAllCardsByLevel(input.levels));
   if (pool.length === 0) {
     throw new Error(`No cards found for levels: ${input.levels.join(', ')}`);
   }
@@ -261,6 +303,7 @@ export async function createMainDeck(input: CreateMainDeckInput): Promise<Create
     kind: 'main',
     wordCountPerWeek: input.wordCountPerWeek,
     triageMode,
+    levels: sortLevels(input.levels),
   });
 
   await createMany(

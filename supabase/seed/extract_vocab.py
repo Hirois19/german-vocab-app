@@ -18,6 +18,10 @@ Dedup key: normalized form of the German term
   - lowercased
   - whitespace collapsed
   - separable verb pipe removed (zu|hören -> zuhören)
+
+When the master list holds the same spelling with different parts of speech
+(arm: adjective / der Arm), the lowest-level part of speech keeps the plain key
+and the others get "<key>#<pos>" (see parse_session_new).
 """
 from __future__ import annotations
 
@@ -51,6 +55,10 @@ ARTICLE_VALUES = {"der", "die", "das"}
 # term_de when it also lives in its own column, which otherwise renders the
 # gender twice on the card ("die" above "die Badewanne").
 DEFINITE_ARTICLE_RE = re.compile(r"^(der|die|das)\s+", re.IGNORECASE)
+
+
+# Rank used to decide which of several same-spelling words keeps the plain key.
+LEVEL_RANK = {"A1": 0, "A2": 1, "B1": 2, "B2": 3, "C1": 4, "C2": 5}
 
 
 def normalize_key(term: str) -> str:
@@ -333,10 +341,11 @@ def add_entry(
     level: str | None = None,
     categories: list[str] | None = None,
     source: str,
+    key_override: str | None = None,
 ):
     if is_noise(raw_term):
         return
-    key = normalize_key(raw_term)
+    key = key_override or normalize_key(raw_term)
     if not key or key in {"none", "null", "nan"}:
         return
     entry = bucket.setdefault(
@@ -468,6 +477,11 @@ def parse_session_new(bucket: dict, path: Path):
     """
     wb = load_workbook(path, data_only=True)
     ws = wb["Session Vokabeln"]
+
+    # Pass 1: read the rows and find spellings shared by different parts of
+    # speech (arm = adjective / der Arm). Those are different words that the
+    # plain spelling key would merge into one card.
+    parsed = []
     for row in ws.iter_rows(min_row=2, values_only=True):
         if not row or not row[0]:
             continue
@@ -486,6 +500,36 @@ def parse_session_new(bucket: dict, path: Path):
                 if t in ("A1", "A2", "B1", "B2", "C1"):
                     level = t
                     break
+        parsed.append((row, tags, level))
+
+    # key -> pos -> (lowest level index, first row index)
+    seen: dict[str, dict[str, tuple[int, int]]] = {}
+    for idx, (row, _tags, level) in enumerate(parsed):
+        if is_noise(row[0]):
+            continue
+        key = normalize_key(row[0])
+        pos = str(row[1]).strip().lower() if row[1] else ""
+        if not key or not pos:
+            continue
+        lvl = LEVEL_RANK.get(level, len(LEVEL_RANK))
+        cur = seen.setdefault(key, {}).get(pos)
+        seen[key][pos] = (min(lvl, cur[0]), cur[1]) if cur else (lvl, idx)
+
+    # The part of speech with the lowest level keeps the plain key, so existing
+    # user_cards stay on the meaning a learner meets first. On equal levels the
+    # first row wins. Every other part of speech gets "<key>#<pos>".
+    bare_pos: dict[str, str] = {}
+    for key, by_pos in seen.items():
+        if len(by_pos) > 1:
+            bare_pos[key] = min(by_pos, key=lambda p: by_pos[p])
+
+    # Pass 2: add the entries.
+    for row, tags, level in parsed:
+        key_override = None
+        key = normalize_key(row[0])
+        pos = str(row[1]).strip().lower() if row[1] else ""
+        if key in bare_pos and pos and pos != bare_pos[key]:
+            key_override = f"{key}#{pos}"
         add_entry(
             bucket,
             row[0],
@@ -500,6 +544,7 @@ def parse_session_new(bucket: dict, path: Path):
             notes=row[9],
             level=level,
             source=path.name,
+            key_override=key_override,
         )
 
 

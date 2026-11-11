@@ -57,8 +57,8 @@ export default function NewDeckScreen() {
       await createMainDeck({
         userId: user.id,
         name: name.trim(),
-        // Pass levels in pedagogical order so the auto-expansion logic and
-        // the position-based scheduler walk easier → harder.
+        // Pass levels in pedagogical order; they are stored on the deck and
+        // decide which level triage tops the deck up with next.
         levels: LEVEL_OPTIONS.filter((lv) => selectedLevels.includes(lv)),
         wordCountPerWeek: w,
       });
@@ -101,8 +101,8 @@ export default function NewDeckScreen() {
         <View style={styles.section}>
           <ThemedText type="subtitle">Levels</ThemedText>
           <ThemedText style={styles.hint}>
-            Pick one or more CEFR levels. If a single level doesn&apos;t hold enough unknown words
-            during triage, the next level is added automatically.
+            Pick one or more CEFR levels. If triage runs out of cards before you find enough unknown
+            words, the rest of your selected levels is added first, then the next level up.
           </ThemedText>
           <View style={styles.chipRow}>
             {LEVEL_OPTIONS.map((lv) => {

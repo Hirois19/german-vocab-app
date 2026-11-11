@@ -15,6 +15,9 @@ All notable changes to this project are documented in this file. The format foll
 - Six dashboard tabs: Today, Progress, Decks, Mastered, Category, Trend.
 - Deck creation, bulk and progressive triage, review sessions, and automatic weak-deck generation.
 - Progressive triage mode with backfill: known words are replaced from the candidate pool so the deck fills to W.
+- Bulk triage tops a deck up with the rest of the selected levels before adding a new level; covered levels are stored on the deck (`decks.levels`, ADR 0010).
+- New decks and top-ups use a random card order instead of alphabetical; the order inside each session is shuffled per day (ADR 0011).
+- Homonym cards (`arm`, `stolz`, `wissen`, ...) are split into one card per part of speech (extra keys `<key>#<pos>`).
 - Per-level coverage bar on the Progress tab (learned vs studying vs remaining).
 - Curated A1-C1 vocabulary master (`german_vocab_session_new.xlsx`, 2,488 entries) and the extract/seed pipeline.
 - Source-data tagging: theme, part of speech, and CEFR-level tags computed at extraction and editable per card.

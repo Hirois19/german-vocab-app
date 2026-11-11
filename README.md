@@ -6,7 +6,7 @@ A mobile vocabulary learning app for German learners, built around the **SEKI 7Ã
 
 ## Why SEKI 7Ã—7 over adaptive SRS (FSRS, SM-2)?
 
-Most flashcard apps use adaptive spaced repetition where each card has its own due date. The SEKI method takes the opposite approach: a fixed batch schedule that guarantees every word is seen the same number of times, regardless of difficulty. This simplifies session UX (the user always knows exactly what to do today) and matches the preferred study rhythm. See [`docs/decisions/0001-seki-method-over-fsrs.md`](docs/decisions/0001-seki-method-over-fsrs.md) for the full rationale.
+Most flashcard apps use adaptive spaced repetition where each card has its own due date. The SEKI method takes the opposite approach: a fixed batch schedule that guarantees every word is seen the same number of times, regardless of difficulty. This simplifies session UX (the user always knows exactly what to do today) and matches the preferred study rhythm. A word comes up on the same day of every cycle (a fixed 7-day interval); which words land on which day is random, set when the deck is created, and the order inside each session is shuffled. See [`docs/decisions/0001-seki-method-over-fsrs.md`](docs/decisions/0001-seki-method-over-fsrs.md) for the full rationale.
 
 ## Stack
 

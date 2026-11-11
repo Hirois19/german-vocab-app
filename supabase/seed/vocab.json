@@ -3228,15 +3228,13 @@
   },
   {
     "canonical_key": "arm",
-    "term_de": "arm",
+    "term_de": "Arm",
     "article": "der",
-    "pos": "adj",
+    "pos": "noun",
     "translations_ja": [
-      "貧しい",
       "腕"
     ],
     "translations_en": [
-      "poor / needy / unfortunate",
       "arm"
     ],
     "examples": [],
@@ -3245,17 +3243,41 @@
     "plural": "die Arme",
     "notes": [],
     "levels": [
-      "B1",
       "A1"
     ],
     "sources": [
       "german_vocab_master.xlsx"
     ],
     "categories": [
-      "adj",
-      "B1",
       "noun",
       "A1"
+    ]
+  },
+  {
+    "canonical_key": "arm#adj",
+    "term_de": "arm",
+    "article": null,
+    "pos": "adj",
+    "translations_ja": [
+      "貧しい"
+    ],
+    "translations_en": [
+      "poor / needy / unfortunate"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "B1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "adj",
+      "B1"
     ]
   },
   {
@@ -17714,20 +17736,18 @@
   },
   {
     "canonical_key": "essen",
-    "term_de": "das Essen",
+    "term_de": "Essen",
     "article": "das",
     "pos": "noun",
     "translations_ja": [
-      "食事／食べ物",
-      "食べる"
+      "食事／食べ物"
     ],
     "translations_en": [
-      "food, meal",
-      "to eat"
+      "food, meal"
     ],
     "examples": [],
-    "prateritum": "aß",
-    "partizip_ii": "hat gegessen",
+    "prateritum": null,
+    "partizip_ii": null,
     "plural": "die Essen",
     "notes": [],
     "levels": [
@@ -17739,8 +17759,35 @@
     "categories": [
       "Essen",
       "noun",
-      "A1",
-      "verb"
+      "A1"
+    ]
+  },
+  {
+    "canonical_key": "essen#verb",
+    "term_de": "essen",
+    "article": null,
+    "pos": "verb",
+    "translations_ja": [
+      "食べる"
+    ],
+    "translations_en": [
+      "to eat"
+    ],
+    "examples": [],
+    "prateritum": "aß",
+    "partizip_ii": "hat gegessen",
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "A1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "Essen",
+      "verb",
+      "A1"
     ]
   },
   {
@@ -36447,14 +36494,40 @@
   {
     "canonical_key": "morgen",
     "term_de": "morgen",
-    "article": "der",
+    "article": null,
     "pos": "adv",
     "translations_ja": [
-      "明日",
+      "明日"
+    ],
+    "translations_en": [
+      "tomorrow"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "A1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "Zeit",
+      "adv",
+      "A1"
+    ]
+  },
+  {
+    "canonical_key": "morgen#noun",
+    "term_de": "Morgen",
+    "article": "der",
+    "pos": "noun",
+    "translations_ja": [
       "朝"
     ],
     "translations_en": [
-      "tomorrow",
       "morning"
     ],
     "examples": [],
@@ -36470,9 +36543,8 @@
     ],
     "categories": [
       "Zeit",
-      "adv",
-      "A1",
-      "noun"
+      "noun",
+      "A1"
     ]
   },
   {
@@ -39955,11 +40027,10 @@
   {
     "canonical_key": "orange",
     "term_de": "orange",
-    "article": "die",
+    "article": null,
     "pos": "adj",
     "translations_ja": [
-      "オレンジ色の",
-      "オレンジ"
+      "オレンジ色の"
     ],
     "translations_en": [
       "orange"
@@ -39967,7 +40038,7 @@
     "examples": [],
     "prateritum": null,
     "partizip_ii": null,
-    "plural": "die Orangen",
+    "plural": null,
     "notes": [
       "uninflected"
     ],
@@ -39981,8 +40052,36 @@
       "Essen",
       "Farben",
       "adj",
-      "A1",
-      "noun"
+      "A1"
+    ]
+  },
+  {
+    "canonical_key": "orange#noun",
+    "term_de": "Orange",
+    "article": "die",
+    "pos": "noun",
+    "translations_ja": [
+      "オレンジ"
+    ],
+    "translations_en": [
+      "orange"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": "die Orangen",
+    "notes": [],
+    "levels": [
+      "A1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "Essen",
+      "Farben",
+      "noun",
+      "A1"
     ]
   },
   {
@@ -46706,11 +46805,36 @@
     "article": null,
     "pos": "pron",
     "translations_ja": [
-      "彼の",
+      "彼の"
+    ],
+    "translations_en": [
+      "his"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "A1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "pron",
+      "A1"
+    ]
+  },
+  {
+    "canonical_key": "sein#verb",
+    "term_de": "sein",
+    "article": null,
+    "pos": "verb",
+    "translations_ja": [
       "〜である"
     ],
     "translations_en": [
-      "his",
       "to be"
     ],
     "examples": [],
@@ -46727,9 +46851,8 @@
       "german_vocab_master.xlsx"
     ],
     "categories": [
-      "pron",
-      "A1",
-      "verb"
+      "verb",
+      "A1"
     ]
   },
   {
@@ -52158,15 +52281,13 @@
   {
     "canonical_key": "stolz",
     "term_de": "stolz",
-    "article": "der",
+    "article": null,
     "pos": "adj",
     "translations_ja": [
-      "誇りに思う",
-      "誇り"
+      "誇りに思う"
     ],
     "translations_en": [
-      "proud",
-      "pride"
+      "proud"
     ],
     "examples": [],
     "prateritum": null,
@@ -52174,8 +52295,7 @@
     "plural": null,
     "notes": [],
     "levels": [
-      "A2",
-      "B2"
+      "A2"
     ],
     "sources": [
       "german_vocab_master.xlsx"
@@ -52183,9 +52303,7 @@
     "categories": [
       "Gefühle",
       "adj",
-      "A2",
-      "noun",
-      "B2"
+      "A2"
     ]
   },
   {
@@ -52213,6 +52331,34 @@
     "categories": [
       "adj",
       "B1"
+    ]
+  },
+  {
+    "canonical_key": "stolz#noun",
+    "term_de": "Stolz",
+    "article": "der",
+    "pos": "noun",
+    "translations_ja": [
+      "誇り"
+    ],
+    "translations_en": [
+      "pride"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "B2"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "Gefühle",
+      "noun",
+      "B2"
     ]
   },
   {
@@ -52385,15 +52531,40 @@
   },
   {
     "canonical_key": "streben",
-    "term_de": "das Streben",
+    "term_de": "Streben",
     "article": "das",
     "pos": "noun",
     "translations_ja": [
-      "努力",
+      "努力"
+    ],
+    "translations_en": [
+      "striving"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "C1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "noun",
+      "C1"
+    ]
+  },
+  {
+    "canonical_key": "streben#verb",
+    "term_de": "streben",
+    "article": null,
+    "pos": "verb",
+    "translations_ja": [
       "目指す"
     ],
     "translations_en": [
-      "striving",
       "to strive"
     ],
     "examples": [],
@@ -52410,9 +52581,8 @@
       "german_vocab_master.xlsx"
     ],
     "categories": [
-      "noun",
-      "C1",
-      "verb"
+      "verb",
+      "C1"
     ]
   },
   {
@@ -64463,15 +64633,13 @@
   {
     "canonical_key": "wissen",
     "term_de": "wissen",
-    "article": "das",
+    "article": null,
     "pos": "verb",
     "translations_ja": [
-      "知っている",
-      "知識"
+      "知っている"
     ],
     "translations_en": [
-      "to know (fact)",
-      "knowledge"
+      "to know (fact)"
     ],
     "examples": [],
     "prateritum": "wusste",
@@ -64479,15 +64647,39 @@
     "plural": null,
     "notes": [],
     "levels": [
-      "A1",
-      "A2"
+      "A1"
     ],
     "sources": [
       "german_vocab_master.xlsx"
     ],
     "categories": [
       "verb",
-      "A1",
+      "A1"
+    ]
+  },
+  {
+    "canonical_key": "wissen#noun",
+    "term_de": "Wissen",
+    "article": "das",
+    "pos": "noun",
+    "translations_ja": [
+      "知識"
+    ],
+    "translations_en": [
+      "knowledge"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [],
+    "levels": [
+      "A2"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
       "Schule",
       "noun",
       "A2"
@@ -66016,20 +66208,16 @@
     "article": null,
     "pos": "adv",
     "translations_ja": [
-      "〜すぎる",
-      "〜へ"
+      "〜すぎる"
     ],
     "translations_en": [
-      "too",
-      "to"
+      "too"
     ],
     "examples": [],
     "prateritum": null,
     "partizip_ii": null,
     "plural": null,
-    "notes": [
-      "+ Dat."
-    ],
+    "notes": [],
     "levels": [
       "A1"
     ],
@@ -66038,8 +66226,7 @@
     ],
     "categories": [
       "adv",
-      "A1",
-      "prep"
+      "A1"
     ]
   },
   {
@@ -66067,6 +66254,35 @@
     "categories": [
       "phrase",
       "C1"
+    ]
+  },
+  {
+    "canonical_key": "zu#prep",
+    "term_de": "zu",
+    "article": null,
+    "pos": "prep",
+    "translations_ja": [
+      "〜へ"
+    ],
+    "translations_en": [
+      "to"
+    ],
+    "examples": [],
+    "prateritum": null,
+    "partizip_ii": null,
+    "plural": null,
+    "notes": [
+      "+ Dat."
+    ],
+    "levels": [
+      "A1"
+    ],
+    "sources": [
+      "german_vocab_master.xlsx"
+    ],
+    "categories": [
+      "prep",
+      "A1"
     ]
   },
   {

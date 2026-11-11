@@ -55,6 +55,21 @@ export async function listCardsByLevel(
   return (data ?? []) as CardRow[];
 }
 
+/**
+ * Every card of the given levels, in canonical_key order. Pages through the
+ * results because a single request is capped at 1000 rows by the API.
+ */
+export async function listAllCardsByLevel(levels: CefrLevel[]): Promise<CardRow[]> {
+  const PAGE = 1000;
+  const out: CardRow[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const page = await listCardsByLevel(levels, PAGE, offset);
+    out.push(...page);
+    if (page.length < PAGE) break;
+  }
+  return out;
+}
+
 export async function listCardsByIds(ids: readonly string[]): Promise<CardRow[]> {
   if (ids.length === 0) return [];
   const out: CardRow[] = [];
